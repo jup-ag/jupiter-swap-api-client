@@ -1,0 +1,12 @@
+[package]
+name = "jupiter-swap-api"
+version = "0.1.0"
+description = ""
+edition = { workspace = true }
+
+[dependencies]
+anyhow = "1"
+serde = { version = "1.0.159", features = ["derive"] }
+serde_json = "1.0.95"
+solana-sdk = { workspace = true }
+base64 = "0.13.1"

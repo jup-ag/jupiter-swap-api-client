@@ -1,0 +1,13 @@
+[package]
+name = "example"
+version = "0.1.0"
+description = ""
+edition = { workspace = true }
+
+[dependencies]
+reqwest = { version = "0.11.20", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+jupiter-swap-api = { path = "../jupiter-swap-api" }
+solana-sdk = { workspace = true }
+serde_urlencoded = "0.7"
+serde_qs = "0.12.0"

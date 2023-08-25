@@ -1,0 +1,12 @@
+[workspace]
+members = [
+    "jupiter-swap-api",
+    "example",
+]
+
+[workspace.package]
+edition = "2021"
+
+[workspace.dependencies]
+solana-sdk = "1.16"
+solana-client = "1.16"
