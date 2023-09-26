@@ -1009,10 +1009,7 @@ name = "example"
 version = "0.1.0"
 dependencies = [
  "bincode",
- "jupiter-swap-api",
- "reqwest",
- "serde_qs",
- "serde_urlencoded",
+ "jupiter-swap-api-client",
  "solana-client",
  "solana-sdk",
  "tokio",
@@ -1551,13 +1548,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "jupiter-swap-api"
+name = "jupiter-swap-api-client"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "base64 0.13.1",
+ "reqwest",
  "serde",
  "serde_json",
+ "serde_qs",
  "solana-sdk",
 ]
 
@@ -1985,9 +1984,9 @@ checksum = "ff011a302c396a5197692431fc1948019154afc178baf7d8e37367442a4601cf"
 
 [[package]]
 name = "openssl-sys"
-version = "0.9.92"
+version = "0.9.93"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db7e971c2c2bba161b2d2fdf37080177eff520b3bc044787c7f1f5f9e78d869b"
+checksum = "db4d56a4c0478783083cfafcc42493dd4a981d41669da64b4572a2a089b51b1d"
 dependencies = [
  "cc",
  "libc",

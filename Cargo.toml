@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "jupiter-swap-api",
+    "jupiter-swap-api-client",
     "example",
 ]
 

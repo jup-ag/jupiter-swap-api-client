@@ -1,11 +1,9 @@
 use std::env;
 
-use jupiter_swap_api::{
-    quote::{QuoteRequest, QuoteResponse},
-    swap::{SwapRequest, SwapResponse},
-    transaction_config::TransactionConfig,
+use jupiter_swap_api_client::{
+    quote::QuoteRequest, swap::SwapRequest, transaction_config::TransactionConfig,
+    JupiterSwapApiClient,
 };
-use reqwest::Client;
 use solana_client::nonblocking::rpc_client::RpcClient;
 use solana_sdk::{pubkey, transaction::VersionedTransaction};
 use solana_sdk::{pubkey::Pubkey, signature::NullSigner};
@@ -18,9 +16,10 @@ pub const TEST_WALLET: Pubkey = pubkey!("2AQdpHJ2JpcEgPiATUXjQxA8QmafFegfQwSLWSp
 
 #[tokio::main]
 async fn main() {
-    let quote_api_base_url =
-        env::var("API_BASE_URL").unwrap_or("https://quote-api.jup.ag/v6".into());
-    println!("Using base url: {}", quote_api_base_url);
+    let api_base_url = env::var("API_BASE_URL").unwrap_or("https://quote-api.jup.ag/v6".into());
+    println!("Using base url: {}", api_base_url);
+
+    let jupiter_swap_api_client = JupiterSwapApiClient::new(api_base_url);
 
     let quote_request = QuoteRequest {
         amount: 1_000_000,
@@ -29,35 +28,21 @@ async fn main() {
         slippage_bps: 50,
         ..QuoteRequest::default()
     };
-    let query = serde_qs::to_string(&quote_request).unwrap();
-    println!("The quote query is {}", query);
 
-    let client = Client::new();
     // GET /quote
-    let quote_response = client
-        .get(format!("{quote_api_base_url}/quote?{query}"))
-        .send()
-        .await
-        .unwrap()
-        .json::<QuoteResponse>()
-        .await
-        .unwrap();
+    let quote_response = jupiter_swap_api_client.quote(&quote_request).await.unwrap();
     println!("{quote_response:#?}");
 
     // POST /swap
-    let swap_response = client
-        .post(format!("{quote_api_base_url}/swap"))
-        .json(&SwapRequest {
+    let swap_response = jupiter_swap_api_client
+        .swap(&SwapRequest {
             user_public_key: TEST_WALLET,
-            quote_response,
+            quote_response: quote_response.clone(),
             config: TransactionConfig::default(),
         })
-        .send()
-        .await
-        .unwrap()
-        .json::<SwapResponse>()
         .await
         .unwrap();
+
     println!("Raw tx len: {}", swap_response.swap_transaction.len());
 
     let versioned_transaction: VersionedTransaction =
@@ -72,8 +57,20 @@ async fn main() {
     let rpc_client = RpcClient::new("https://api.mainnet-beta.solana.com".into());
 
     // This will fail with "Transaction signature verification failure" as we did not really sign
-    rpc_client
+    let error = rpc_client
         .send_and_confirm_transaction(&signed_versioned_transaction)
         .await
+        .unwrap_err();
+    println!("{error}");
+
+    // POST /swap-instructions
+    let swap_instructions = jupiter_swap_api_client
+        .swap_instructions(&SwapRequest {
+            user_public_key: TEST_WALLET,
+            quote_response,
+            config: TransactionConfig::default(),
+        })
+        .await
         .unwrap();
+    println!("swap_instructions: {swap_instructions:?}");
 }
