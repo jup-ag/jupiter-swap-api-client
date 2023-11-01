@@ -1,7 +1,7 @@
 use crate::{
     quote::QuoteResponse, serde_helpers::field_as_string, transaction_config::TransactionConfig,
 };
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 use solana_sdk::{
     instruction::{AccountMeta, Instruction},
     pubkey::Pubkey,
