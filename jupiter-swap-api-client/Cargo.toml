@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Rust client for Jupiter Swap API integration."
 license = "MIT"
 edition = { workspace = true }
+readme = "README.md"
 
 [dependencies]
 anyhow = "1"
