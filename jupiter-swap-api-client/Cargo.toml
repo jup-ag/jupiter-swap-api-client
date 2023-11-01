@@ -1,7 +1,8 @@
 [package]
 name = "jupiter-swap-api-client"
 version = "0.1.0"
-description = ""
+description = "Rust client for Jupiter Swap API integration."
+license = "MIT"
 edition = { workspace = true }
 
 [dependencies]
