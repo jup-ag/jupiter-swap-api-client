@@ -45,7 +45,7 @@ async fn main() {
 
     println!("Raw tx len: {}", swap_response.swap_transaction.len());
 
-    let versioned_transaction: VersionedTransaction =
+    let mut versioned_transaction: VersionedTransaction =
         bincode::deserialize(&swap_response.swap_transaction).unwrap();
 
     let rpc_client = RpcClient::new("https://api.mainnet-beta.solana.com".into());
