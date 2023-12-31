@@ -48,14 +48,22 @@ async fn main() {
     let versioned_transaction: VersionedTransaction =
         bincode::deserialize(&swap_response.swap_transaction).unwrap();
 
+    let rpc_client = RpcClient::new("https://api.mainnet-beta.solana.com".into());
+
+    //Get the latest blockhash with rpc client
+    let latest_blockhash = rpc_client
+        .get_latest_blockhash()
+        .await
+        .unwrap();
+    //Set recent_blockhash to the latest_blockhash obtained
+    versioned_transaction.message.set_recent_blockhash(latest_blockhash);
+
     // Replace with a keypair or other struct implementing signer
     let null_signer = NullSigner::new(&TEST_WALLET);
     let signed_versioned_transaction =
         VersionedTransaction::try_new(versioned_transaction.message, &[&null_signer]).unwrap();
 
     // send with rpc client...
-    let rpc_client = RpcClient::new("https://api.mainnet-beta.solana.com".into());
-
     // This will fail with "Transaction signature verification failure" as we did not really sign
     let error = rpc_client
         .send_and_confirm_transaction(&signed_versioned_transaction)
