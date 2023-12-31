@@ -55,6 +55,7 @@ async fn main() {
         .get_latest_blockhash()
         .await
         .unwrap();
+
     //Set recent_blockhash to the latest_blockhash obtained
     versioned_transaction.message.set_recent_blockhash(latest_blockhash);
 
