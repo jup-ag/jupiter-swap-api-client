@@ -79,15 +79,19 @@ async fn main() {
 ```
 For the full example, please refer to the [examples](../example/) directory in this repository.
 
-### Using hosted swap API URLs
+### Using Self-hosted APIs
 
-You can set custom URLs via environment variables for any self-hosted Jupiter APIs. Like the [V6 Swap API](https://station.jup.ag/docs/apis/self-hosted) or [QuickNode's Metis API](https://marketplace.quicknode.com/add-on/metis-jupiter-v6-swap-api). Here are the ENV vars:
+You can set custom URLs via environment variables for any self-hosted Jupiter APIs. Like the [V6 Swap API](https://station.jup.ag/docs/apis/self-hosted) or the [paid hosted APIs](#paid-hosted-apis). Here are the ENV vars:
 
 ```
-API_BASE_URL=https://jupiter-swaps.quiknode.pro/D3ADB33F
+API_BASE_URL=https://hosted.api
 ```
+
+### Paid Hosted APIs
+
+You can also check out some of the [paid hosted APIs](https://station.jup.ag/docs/apis/self-hosted#paid-hosted-apis).
 
 ## Additional Resources
 
 - [Jupiter Swap API Documentation](https://station.jup.ag/docs/v6/swap-api): Learn more about the Jupiter Swap API and its capabilities.
-- [Jup.ag Website](https://jup.ag/): Explore the official website for additional information and resources.
+- [jup.ag Website](https://jup.ag/): Explore the official website for additional information and resources.
