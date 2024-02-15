@@ -4,10 +4,6 @@
 
 The `jup-swap-api-client` is a Rust client library designed to simplify the integration of the Jupiter Swap API, enabling seamless swaps on the Solana blockchain.
 
-### What is jup.ag?
-
-[jup.ag](https://jup.ag/) is a powerful platform that provides developers with an easy way to access liquidity on the Solana blockchain. It simplifies the process of executing swaps by allowing you to specify the desired token pairs, amount, and slippage. In return, the API will provide you with the serialized transactions required to execute the swap on the Solana blockchain, complete with the necessary signatures.
-
 ## Getting Started
 
 To use the `jup-swap-api-client` crate in your Rust project, follow these simple steps:
