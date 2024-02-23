@@ -91,8 +91,6 @@ pub struct PlatformFee {
 #[serde(rename_all = "camelCase")]
 pub struct QuoteResponse {
     #[serde(with = "field_as_string")]
-    pub input_mint: Pubkey,
-    #[serde(with = "field_as_string")]
     pub in_amount: u64,
     #[serde(with = "field_as_string")]
     pub output_mint: Pubkey,
