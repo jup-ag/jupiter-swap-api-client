@@ -4,7 +4,7 @@
 use std::str::FromStr;
 
 use crate::route_plan_with_metadata::RoutePlanWithMetadata;
-use crate::serde_helpers::field_as_string;
+use crate::serde_helpers::{field_as_string, serialize_comma_separated::serialize_comma_separated};
 use anyhow::{anyhow, Error};
 use serde::{Deserialize, Serialize};
 use solana_sdk::pubkey::Pubkey;
@@ -42,7 +42,7 @@ pub enum SwapMode {
 impl FromStr for SwapMode {
     type Err = Error;
 
-    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "ExactIn" => Ok(Self::ExactIn),
             "ExactOut" => Ok(Self::ExactOut),
@@ -65,8 +65,16 @@ pub struct QuoteRequest {
     pub slippage_bps: u16,
     /// Platform fee in basis points
     pub platform_fee_bps: Option<u8>,
+    #[serde(serialize_with = "serialize_comma_separated")]
     pub dexes: Option<Vec<String>>,
+    #[serde(serialize_with = "serialize_comma_separated")]
     pub excluded_dexes: Option<Vec<String>>,
+    /// Default is false. By setting this to true, our API will suggest smart slippage info that you can use.
+    /// computedAutoSlippage is the computed result, and slippageBps is what we suggest you to use. Additionally, you should check out maxAutoSlippageBps and autoSlippageCollisionUsdValue.
+    pub auto_slippage: Option<bool>,
+    /// In conjunction with `autoSlippage=true`, the maximum slippageBps returned by the API will respect this value. It is recommended that you set something here.
+    pub max_auto_slippage_bps: Option<u16>,
+    pub auto_slippage_collision_usd_value: Option<u64>,
     /// Quote only direct routes
     pub only_direct_routes: Option<bool>,
     /// Quote fit into legacy transaction
@@ -75,8 +83,10 @@ pub struct QuoteRequest {
     /// this might dangerously limit routing ending up giving a bad price.
     /// The max is an estimation and not the exact count
     pub max_accounts: Option<usize>,
-    // Quote type to be used for routing, switches the algorithm
+    /// Quote type to be used for routing, switches the algorithm
     pub quote_type: Option<String>,
+    /// API access token
+    pub token: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

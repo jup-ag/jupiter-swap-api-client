@@ -15,7 +15,7 @@ const NATIVE_MINT: Pubkey = pubkey!("So11111111111111111111111111111111111111112
 pub const TEST_WALLET: Pubkey = pubkey!("2AQdpHJ2JpcEgPiATUXjQxA8QmafFegfQwSLWSprPicm"); // Coinbase 2 wallet
 
 #[tokio::main]
-async fn main() {
+pub async fn main() {
     let api_base_url = env::var("API_BASE_URL").unwrap_or("https://quote-api.jup.ag/v6".into());
     println!("Using base url: {}", api_base_url);
 
