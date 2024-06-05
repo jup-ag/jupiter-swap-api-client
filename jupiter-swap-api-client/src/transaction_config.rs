@@ -12,6 +12,20 @@ pub enum ComputeUnitPriceMicroLamports {
     Auto,
 }
 
+#[derive(Deserialize, Serialize, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
+// #[serde(untagged)]
+pub enum PrioritizationFeeLamports {
+    /// Jupiter will automatically set a priority fee,
+    /// and it will be capped at 5,000,000 lamports / 0.005 SOL
+    #[serde(deserialize_with = "auto")]
+    Auto,
+    /// The priority fee will be a multiplier on the auto fee.
+    AutoMultiplier(u64),
+    /// A tip instruction will be included to Jito and no priority fee will be set.
+    JitoTipLamports(u64)
+}
+
 fn auto<'de, D>(deserializer: D) -> Result<(), D::Error>
 where
     D: Deserializer<'de>,
@@ -39,6 +53,9 @@ pub struct TransactionConfig {
     pub destination_token_account: Option<Pubkey>,
     /// compute unit price to prioritize the transaction, the additional fee will be compute unit consumed * computeUnitPriceMicroLamports
     pub compute_unit_price_micro_lamports: Option<ComputeUnitPriceMicroLamports>,
+    /// Prioritization fee lamports paid for the transaction in addition to the signatures fee.
+    /// Mutually exclusive with `compute_unit_price_micro_lamports`.
+    pub prioritization_fee_lamports: Option<PrioritizationFeeLamports>,
     /// Request a legacy transaction rather than the default versioned transaction, needs to be paired with a quote using asLegacyTransaction otherwise the transaction might be too large
     ///
     /// Default: false
@@ -62,6 +79,7 @@ impl Default for TransactionConfig {
             fee_account: None,
             destination_token_account: None,
             compute_unit_price_micro_lamports: None,
+            prioritization_fee_lamports: None,
             as_legacy_transaction: false,
             use_shared_accounts: true,
             use_token_ledger: false,
