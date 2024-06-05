@@ -56,6 +56,9 @@ pub struct TransactionConfig {
     /// Prioritization fee lamports paid for the transaction in addition to the signatures fee.
     /// Mutually exclusive with `compute_unit_price_micro_lamports`.
     pub prioritization_fee_lamports: Option<PrioritizationFeeLamports>,
+    /// When enabled, it will do a swap simulation to get the compute unit used and set it in ComputeBudget's compute unit limit.
+    /// This will increase latency slightly since there will be one extra RPC call to simulate this. Default is false.
+    pub dynamic_compute_unit_limit: Option<bool>,
     /// Request a legacy transaction rather than the default versioned transaction, needs to be paired with a quote using asLegacyTransaction otherwise the transaction might be too large
     ///
     /// Default: false
@@ -80,6 +83,7 @@ impl Default for TransactionConfig {
             destination_token_account: None,
             compute_unit_price_micro_lamports: None,
             prioritization_fee_lamports: None,
+            dynamic_compute_unit_limit: None,
             as_legacy_transaction: false,
             use_shared_accounts: true,
             use_token_ledger: false,
