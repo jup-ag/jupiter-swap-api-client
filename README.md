@@ -73,7 +73,7 @@ async fn main() {
 }
 
 ```
-For the full example, please refer to the [examples](../example/) directory in this repository.
+For the full example, please refer to the [examples](./example/) directory in this repository.
 
 ### Using Self-hosted APIs
 
