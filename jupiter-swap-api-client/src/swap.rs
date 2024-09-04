@@ -27,6 +27,7 @@ pub struct SwapResponse {
 
 mod base64_deserialize {
     use super::*;
+    use base64::{Engine, engine::general_purpose};
     use serde::{de, Deserializer};
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
@@ -34,7 +35,8 @@ mod base64_deserialize {
         D: Deserializer<'de>,
     {
         let swap_transaction_string = String::deserialize(deserializer)?;
-        base64::decode(swap_transaction_string)
+        general_purpose::STANDARD
+            .decode(swap_transaction_string)
             .map_err(|e| de::Error::custom(format!("base64 decoding error: {:?}", e)))
     }
 }
@@ -82,12 +84,12 @@ pub struct AccountMetaInternal {
     pub is_writable: bool,
 }
 
-impl Into<AccountMeta> for AccountMetaInternal {
-    fn into(self) -> AccountMeta {
+impl From<AccountMetaInternal> for AccountMeta {
+    fn from(val: AccountMetaInternal) -> Self {
         AccountMeta {
-            pubkey: self.pubkey,
-            is_signer: self.is_signer,
-            is_writable: self.is_writable,
+            pubkey: val.pubkey,
+            is_signer: val.is_signer,
+            is_writable: val.is_writable,
         }
     }
 }
@@ -96,12 +98,12 @@ impl Into<AccountMeta> for AccountMetaInternal {
 #[serde(rename_all = "camelCase")]
 struct PubkeyInternal(#[serde(with = "field_as_string")] Pubkey);
 
-impl Into<Instruction> for InstructionInternal {
-    fn into(self) -> Instruction {
+impl From<InstructionInternal> for Instruction {
+    fn from(val: InstructionInternal) -> Self {
         Instruction {
-            program_id: self.program_id,
-            accounts: self.accounts.into_iter().map(Into::into).collect(),
-            data: self.data,
+            program_id: val.program_id,
+            accounts: val.accounts.into_iter().map(Into::into).collect(),
+            data: val.data,
         }
     }
 }
