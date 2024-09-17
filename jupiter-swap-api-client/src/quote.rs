@@ -81,8 +81,8 @@ pub struct QuoteRequest {
     pub minimize_slippage: Option<bool>,
     /// Platform fee in basis points
     pub platform_fee_bps: Option<u8>,
-    pub dexes: Option<Vec<String>>,
-    pub excluded_dexes: Option<Vec<String>>,
+    pub dexes: Option<Dexes>,
+    pub excluded_dexes: Option<Dexes>,
     /// Quote only direct routes
     pub only_direct_routes: Option<bool>,
     /// Quote fit into legacy transaction
@@ -101,6 +101,9 @@ pub struct QuoteRequest {
     // enable only full liquid markets as intermediate tokens
     pub prefer_liquid_dexes: Option<bool>,
 }
+
+/// Comma delimited list of dex labels
+type Dexes = String;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]

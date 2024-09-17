@@ -1873,32 +1873,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "jupiter-amm-interface"
-version = "0.4.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be954b20150b666b2bc328d1e490294a1c096e545f985d852f53c941209b2649"
-dependencies = [
- "anyhow",
- "borsh 0.10.3",
- "rust_decimal",
- "serde",
- "serde_json",
- "solana-account-decoder",
- "solana-sdk",
-]
-
-[[package]]
 name = "jupiter-swap-api-client"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
- "jupiter-amm-interface",
  "reqwest",
  "rust_decimal",
  "serde",
  "serde_json",
  "serde_qs",
+ "solana-account-decoder",
  "solana-sdk",
 ]
 

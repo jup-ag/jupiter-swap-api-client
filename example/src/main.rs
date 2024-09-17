@@ -25,6 +25,7 @@ async fn main() {
         amount: 1_000_000,
         input_mint: USDC_MINT,
         output_mint: NATIVE_MINT,
+        dexes: Some("Whirlpool,Meteora DLMM,Raydium CLMM".into()),
         slippage_bps: 50,
         ..QuoteRequest::default()
     };

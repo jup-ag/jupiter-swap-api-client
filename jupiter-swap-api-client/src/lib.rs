@@ -40,11 +40,8 @@ impl JupiterSwapApiClient {
     }
 
     pub async fn quote(&self, quote_request: &QuoteRequest) -> Result<QuoteResponse> {
-        let query = serde_qs::to_string(&quote_request)?;
-        let response = Client::new()
-            .get(format!("{}/quote?{query}", self.base_path))
-            .send()
-            .await?;
+        let url = format!("{}/quote", self.base_path);
+        let response = Client::new().get(url).query(&quote_request).send().await?;
         check_status_code_and_deserialize(response).await
     }
 

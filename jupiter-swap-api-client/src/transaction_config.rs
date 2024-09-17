@@ -1,5 +1,6 @@
-use jupiter_amm_interface::KeyedUiAccount;
 use serde::{Deserialize, Deserializer, Serialize};
+use serde_json::Value;
+use solana_account_decoder::UiAccount;
 use solana_sdk::pubkey::Pubkey;
 
 use crate::serde_helpers::option_field_as_string;
@@ -118,4 +119,13 @@ impl Default for TransactionConfig {
             dynamic_slippage: None,
         }
     }
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
+pub struct KeyedUiAccount {
+    pub pubkey: String,
+    #[serde(flatten)]
+    pub ui_account: UiAccount,
+    /// Additional data an Amm requires, Amm dependent and decoded in the Amm implementation
+    pub params: Option<Value>,
 }
