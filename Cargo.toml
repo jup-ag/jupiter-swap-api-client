@@ -10,3 +10,4 @@ edition = "2021"
 [workspace.dependencies]
 solana-sdk = "=1.18"
 solana-client = "=1.18"
+solana-account-decoder = "=1.18"
