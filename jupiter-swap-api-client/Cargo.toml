@@ -11,4 +11,7 @@ serde_json = "1.0.95"
 solana-sdk = { workspace = true }
 base64 = "0.22.1"
 serde_qs = "0.13.0"
+# Not using reqwest 0.12 for now due to zeroize dep conflicts
 reqwest = { version = "0.11.27", features = ["json"] }
+jupiter-amm-interface = "0.4.5"
+rust_decimal = "1.36.0"

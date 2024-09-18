@@ -1,11 +1,12 @@
 //! Quote data structure for quoting and quote response
 //!
 
-use std::str::FromStr;
+use std::{collections::HashMap, str::FromStr};
 
 use crate::route_plan_with_metadata::RoutePlanWithMetadata;
 use crate::serde_helpers::field_as_string;
 use anyhow::{anyhow, Error};
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use solana_sdk::pubkey::Pubkey;
 
@@ -95,6 +96,8 @@ pub struct QuoteRequest {
     pub max_accounts: Option<usize>,
     // Quote type to be used for routing, switches the algorithm
     pub quote_type: Option<String>,
+    // Extra args which are quote type specific to allow controlling settings from the top level
+    pub quote_args: Option<HashMap<String, String>>,
     // enable only full liquid markets as intermediate tokens
     pub prefer_liquid_dexes: Option<bool>,
 }
@@ -128,7 +131,7 @@ pub struct QuoteResponse {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub uses_quote_minimizing_slippage: Option<bool>,
     pub platform_fee: Option<PlatformFee>,
-    pub price_impact_pct: String,
+    pub price_impact_pct: Decimal,
     pub route_plan: RoutePlanWithMetadata,
     #[serde(default)]
     pub context_slot: u64,
