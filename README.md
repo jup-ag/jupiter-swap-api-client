@@ -12,7 +12,7 @@ Add the crate to your `Cargo.toml`:
 
     ```toml
     [dependencies]
-    jup-swap-api-client = "0.1.0"
+    jupiter-swap-api-client = { git = "https://github.com/jup-ag/jupiter-swap-api-client.git", package = "jupiter-swap-api-client"}
     ```
 
 ## Examples
