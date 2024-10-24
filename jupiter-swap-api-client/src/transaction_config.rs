@@ -5,7 +5,7 @@ use solana_sdk::pubkey::Pubkey;
 
 use crate::serde_helpers::option_field_as_string;
 
-#[derive(Deserialize, Serialize, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(untagged)]
 pub enum ComputeUnitPriceMicroLamports {
@@ -14,7 +14,7 @@ pub enum ComputeUnitPriceMicroLamports {
     Auto,
 }
 
-#[derive(Deserialize, Serialize, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 // #[serde(untagged)]
 pub enum PrioritizationFeeLamports {
@@ -48,7 +48,7 @@ pub struct DynamicSlippageSettings {
     pub max_bps: Option<u16>,
 }
 
-#[derive(Serialize, Debug, PartialEq)]
+#[derive(Serialize, Debug, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
 pub struct TransactionConfig {
