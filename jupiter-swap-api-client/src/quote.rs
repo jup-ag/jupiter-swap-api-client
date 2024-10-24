@@ -52,7 +52,7 @@ impl FromStr for SwapMode {
     }
 }
 
-#[derive(Serialize, Debug, Default)]
+#[derive(Serialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct QuoteRequest {
     #[serde(with = "field_as_string")]

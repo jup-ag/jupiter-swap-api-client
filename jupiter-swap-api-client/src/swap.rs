@@ -8,7 +8,7 @@ use solana_sdk::{
     pubkey::Pubkey,
 };
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapRequest {
     #[serde(with = "field_as_string")]
@@ -18,7 +18,7 @@ pub struct SwapRequest {
     pub config: TransactionConfig,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum PrioritizationType {
     #[serde(rename_all = "camelCase")]
@@ -30,7 +30,7 @@ pub enum PrioritizationType {
     },
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct DynamicSlippageReport {
     pub slippage_bps: u16,
@@ -40,14 +40,14 @@ pub struct DynamicSlippageReport {
     pub amplification_ratio: Option<Decimal>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UiSimulationError {
     error_code: String,
     error: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapResponse {
     #[serde(with = "base64_serialize_deserialize")]
@@ -81,7 +81,7 @@ pub mod base64_serialize_deserialize {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SwapInstructionsResponse {
     pub token_ledger_instruction: Option<Instruction>,
     pub compute_budget_instructions: Vec<Instruction>,
@@ -101,7 +101,7 @@ pub struct SwapInstructionsResponse {
 }
 
 // Duplicate for deserialization
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapInstructionsResponseInternal {
     token_ledger_instruction: Option<InstructionInternal>,
@@ -121,7 +121,7 @@ pub struct SwapInstructionsResponseInternal {
     simulation_error: Option<UiSimulationError>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct InstructionInternal {
     #[serde(with = "field_as_string")]
@@ -131,7 +131,7 @@ struct InstructionInternal {
     pub data: Vec<u8>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountMetaInternal {
     #[serde(with = "field_as_string")]
@@ -150,7 +150,7 @@ impl From<AccountMetaInternal> for AccountMeta {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct PubkeyInternal(#[serde(with = "field_as_string")] Pubkey);
 
