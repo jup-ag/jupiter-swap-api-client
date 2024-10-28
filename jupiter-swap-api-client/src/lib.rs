@@ -5,7 +5,7 @@ use serde::de::DeserializeOwned;
 use swap::{SwapInstructionsResponse, SwapInstructionsResponseInternal, SwapRequest, SwapResponse};
 
 pub mod quote;
-mod route_plan_with_metadata;
+pub mod route_plan_with_metadata;
 pub mod serde_helpers;
 pub mod swap;
 pub mod transaction_config;
