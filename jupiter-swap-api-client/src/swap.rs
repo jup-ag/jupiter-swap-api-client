@@ -47,7 +47,7 @@ pub struct UiSimulationError {
     error: String,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapResponse {
     #[serde(with = "base64_serialize_deserialize")]
