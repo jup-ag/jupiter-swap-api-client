@@ -5,6 +5,7 @@ use std::{collections::HashMap, str::FromStr};
 
 use crate::route_plan_with_metadata::RoutePlanWithMetadata;
 use crate::serde_helpers::field_as_string;
+use crate::serde_helpers::query_extra_args::serialize_extra_args;
 use anyhow::{anyhow, Error};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
@@ -97,6 +98,7 @@ pub struct QuoteRequest {
     // Quote type to be used for routing, switches the algorithm
     pub quote_type: Option<String>,
     // Extra args which are quote type specific to allow controlling settings from the top level
+    #[serde(serialize_with = "serialize_extra_args")]
     pub quote_args: Option<HashMap<String, String>>,
     // enable only full liquid markets as intermediate tokens
     pub prefer_liquid_dexes: Option<bool>,
