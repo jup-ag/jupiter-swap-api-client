@@ -31,7 +31,7 @@ async fn main() {
     };
 
     // GET /quote
-    let quote_response = jupiter_swap_api_client.quote(quote_request).await.unwrap();
+    let quote_response = jupiter_swap_api_client.quote(&quote_request).await.unwrap();
     println!("{quote_response:#?}");
 
     // POST /swap

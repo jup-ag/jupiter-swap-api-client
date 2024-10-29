@@ -39,10 +39,10 @@ impl JupiterSwapApiClient {
         Self { base_path }
     }
 
-    pub async fn quote(&self, quote_request: QuoteRequest) -> Result<QuoteResponse> {
+    pub async fn quote(&self, quote_request: &QuoteRequest) -> Result<QuoteResponse> {
         let url = format!("{}/quote", self.base_path);
         let extra_args = quote_request.quote_args.clone();
-        let internal_quote_request = InternalQuoteRequest::from(quote_request);
+        let internal_quote_request = InternalQuoteRequest::from(quote_request.clone());
         let response = Client::new()
             .get(url)
             .query(&internal_quote_request)
