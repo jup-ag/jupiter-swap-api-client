@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Result};
-use quote::{QuoteRequest, QuoteResponse};
+use quote::{InternalQuoteRequest, QuoteRequest, QuoteResponse};
 use reqwest::{Client, Response};
 use serde::de::DeserializeOwned;
 use swap::{SwapInstructionsResponse, SwapInstructionsResponseInternal, SwapRequest, SwapResponse};
@@ -39,9 +39,16 @@ impl JupiterSwapApiClient {
         Self { base_path }
     }
 
-    pub async fn quote(&self, quote_request: &QuoteRequest) -> Result<QuoteResponse> {
+    pub async fn quote(&self, quote_request: QuoteRequest) -> Result<QuoteResponse> {
         let url = format!("{}/quote", self.base_path);
-        let response = Client::new().get(url).query(&quote_request).send().await?;
+        let extra_args = quote_request.quote_args.clone();
+        let internal_quote_request = InternalQuoteRequest::from(quote_request);
+        let response = Client::new()
+            .get(url)
+            .query(&internal_quote_request)
+            .query(&extra_args)
+            .send()
+            .await?;
         check_status_code_and_deserialize(response).await
     }
 
