@@ -48,7 +48,7 @@ pub struct DynamicSlippageSettings {
     pub max_bps: Option<u16>,
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
 pub struct TransactionConfig {

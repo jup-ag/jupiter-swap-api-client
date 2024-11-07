@@ -8,7 +8,7 @@ use solana_sdk::{
     pubkey::Pubkey,
 };
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapRequest {
     #[serde(with = "field_as_string")]
