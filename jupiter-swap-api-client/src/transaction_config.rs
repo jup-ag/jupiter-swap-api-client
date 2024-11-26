@@ -1,4 +1,4 @@
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
 use solana_account_decoder::UiAccount;
 use solana_sdk::pubkey::Pubkey;
@@ -14,18 +14,84 @@ pub enum ComputeUnitPriceMicroLamports {
     Auto,
 }
 
-#[derive(Deserialize, Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Copy, Clone)]
 #[serde(rename_all = "camelCase")]
-// #[serde(untagged)]
+pub enum PriorityLevel {
+    Medium,
+    High,
+    VeryHigh,
+}
+
+#[derive(Deserialize, Debug, PartialEq, Copy, Clone, Default)]
+#[serde(rename_all = "camelCase")]
 pub enum PrioritizationFeeLamports {
-    /// Jupiter will automatically set a priority fee,
-    /// and it will be capped at 5,000,000 lamports / 0.005 SOL
-    #[serde(deserialize_with = "auto")]
-    Auto,
-    /// The priority fee will be a multiplier on the auto fee.
-    AutoMultiplier(u64),
-    /// A tip instruction will be included to Jito and no priority fee will be set.
+    AutoMultiplier(u32),
     JitoTipLamports(u64),
+    #[serde(rename_all = "camelCase")]
+    PriorityLevelWithMaxLamports {
+        priority_level: PriorityLevel,
+        max_lamports: u64,
+        #[serde(default)]
+        global: bool,
+    },
+    #[default]
+    #[serde(untagged, deserialize_with = "auto")]
+    Auto,
+    #[serde(untagged)]
+    Lamports(u64),
+    #[serde(untagged, deserialize_with = "disabled")]
+    Disabled,
+}
+
+impl Serialize for PrioritizationFeeLamports {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        #[derive(Serialize)]
+        #[serde(rename_all = "camelCase")]
+        struct AutoMultiplier {
+            auto_multiplier: u32,
+        }
+
+        #[derive(Serialize)]
+        #[serde(rename_all = "camelCase")]
+        struct PriorityLevelWithMaxLamports<'a> {
+            priority_level: &'a PriorityLevel,
+            max_lamports: &'a u64,
+            global: &'a bool,
+        }
+
+        #[derive(Serialize)]
+        #[serde(rename_all = "camelCase")]
+        struct JitoTipLamports {
+            jito_tip_lamports: u64,
+        }
+
+        match self {
+            Self::AutoMultiplier(auto_multiplier) => AutoMultiplier {
+                auto_multiplier: *auto_multiplier,
+            }
+            .serialize(serializer),
+            Self::JitoTipLamports(lamports) => JitoTipLamports {
+                jito_tip_lamports: *lamports,
+            }
+            .serialize(serializer),
+            Self::Auto => serializer.serialize_str("auto"),
+            Self::Lamports(lamports) => serializer.serialize_u64(*lamports),
+            Self::Disabled => serializer.serialize_str("disabled"),
+            Self::PriorityLevelWithMaxLamports {
+                priority_level,
+                max_lamports,
+                global,
+            } => PriorityLevelWithMaxLamports {
+                priority_level,
+                max_lamports,
+                global,
+            }
+            .serialize(serializer),
+        }
+    }
 }
 
 fn auto<'de, D>(deserializer: D) -> Result<(), D::Error>
@@ -35,6 +101,19 @@ where
     #[derive(Deserialize)]
     enum Helper {
         #[serde(rename = "auto")]
+        Variant,
+    }
+    Helper::deserialize(deserializer)?;
+    Ok(())
+}
+
+fn disabled<'de, D>(deserializer: D) -> Result<(), D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    enum Helper {
+        #[serde(rename = "disabled")]
         Variant,
     }
     Helper::deserialize(deserializer)?;
