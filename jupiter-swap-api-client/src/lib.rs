@@ -55,6 +55,7 @@ impl JupiterSwapApiClient {
     pub async fn swap(&self, swap_request: &SwapRequest) -> Result<SwapResponse> {
         let response = Client::new()
             .post(format!("{}/swap", self.base_path))
+            .query(&swap_request.extra_args)
             .json(swap_request)
             .send()
             .await?;

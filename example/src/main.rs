@@ -7,7 +7,6 @@ use jupiter_swap_api_client::{
 use solana_client::nonblocking::rpc_client::RpcClient;
 use solana_sdk::{pubkey, transaction::VersionedTransaction};
 use solana_sdk::{pubkey::Pubkey, signature::NullSigner};
-use tokio;
 
 const USDC_MINT: Pubkey = pubkey!("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
 const NATIVE_MINT: Pubkey = pubkey!("So11111111111111111111111111111111111111112");
@@ -40,6 +39,7 @@ async fn main() {
             user_public_key: TEST_WALLET,
             quote_response: quote_response.clone(),
             config: TransactionConfig::default(),
+            extra_args: None,
         })
         .await
         .unwrap();
@@ -70,6 +70,7 @@ async fn main() {
             user_public_key: TEST_WALLET,
             quote_response,
             config: TransactionConfig::default(),
+            extra_args: None,
         })
         .await
         .unwrap();

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{
     quote::QuoteResponse, serde_helpers::field_as_string, transaction_config::TransactionConfig,
 };
@@ -16,6 +18,8 @@ pub struct SwapRequest {
     pub quote_response: QuoteResponse,
     #[serde(flatten)]
     pub config: TransactionConfig,
+    /// Extra args to be passed to the swap api call as query params
+    pub extra_args: Option<HashMap<String, String>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
