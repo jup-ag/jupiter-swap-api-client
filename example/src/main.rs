@@ -35,12 +35,14 @@ async fn main() {
 
     // POST /swap
     let swap_response = jupiter_swap_api_client
-        .swap(&SwapRequest {
-            user_public_key: TEST_WALLET,
-            quote_response: quote_response.clone(),
-            config: TransactionConfig::default(),
-            extra_args: None,
-        })
+        .swap(
+            &SwapRequest {
+                user_public_key: TEST_WALLET,
+                quote_response: quote_response.clone(),
+                config: TransactionConfig::default(),
+            },
+            None,
+        )
         .await
         .unwrap();
 
@@ -70,7 +72,6 @@ async fn main() {
             user_public_key: TEST_WALLET,
             quote_response,
             config: TransactionConfig::default(),
-            extra_args: None,
         })
         .await
         .unwrap();

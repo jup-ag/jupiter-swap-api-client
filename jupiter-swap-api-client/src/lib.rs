@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use anyhow::{anyhow, Result};
 use quote::{InternalQuoteRequest, QuoteRequest, QuoteResponse};
 use reqwest::{Client, Response};
@@ -52,10 +54,14 @@ impl JupiterSwapApiClient {
         check_status_code_and_deserialize(response).await
     }
 
-    pub async fn swap(&self, swap_request: &SwapRequest) -> Result<SwapResponse> {
+    pub async fn swap(
+        &self,
+        swap_request: &SwapRequest,
+        extra_args: Option<HashMap<String, String>>,
+    ) -> Result<SwapResponse> {
         let response = Client::new()
             .post(format!("{}/swap", self.base_path))
-            .query(&swap_request.extra_args)
+            .query(&extra_args)
             .json(swap_request)
             .send()
             .await?;

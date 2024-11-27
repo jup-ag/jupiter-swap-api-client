@@ -18,8 +18,6 @@ pub struct SwapRequest {
     pub quote_response: QuoteResponse,
     #[serde(flatten)]
     pub config: TransactionConfig,
-    /// Extra args to be passed to the swap api call as query params
-    pub extra_args: Option<HashMap<String, String>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
