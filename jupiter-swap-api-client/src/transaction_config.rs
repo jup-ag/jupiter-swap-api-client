@@ -56,6 +56,12 @@ impl Serialize for PrioritizationFeeLamports {
 
         #[derive(Serialize)]
         #[serde(rename_all = "camelCase")]
+        struct PriorityLevelWrapper<'a> {
+            priority_level_with_max_lamports: PriorityLevelWithMaxLamports<'a>,
+        }
+
+        #[derive(Serialize)]
+        #[serde(rename_all = "camelCase")]
         struct PriorityLevelWithMaxLamports<'a> {
             priority_level: &'a PriorityLevel,
             max_lamports: &'a u64,
@@ -84,10 +90,12 @@ impl Serialize for PrioritizationFeeLamports {
                 priority_level,
                 max_lamports,
                 global,
-            } => PriorityLevelWithMaxLamports {
-                priority_level,
-                max_lamports,
-                global,
+            } => PriorityLevelWrapper {
+                priority_level_with_max_lamports: PriorityLevelWithMaxLamports {
+                    priority_level,
+                    max_lamports,
+                    global,
+                }
             }
             .serialize(serializer),
         }
@@ -185,7 +193,11 @@ impl Default for TransactionConfig {
             fee_account: None,
             destination_token_account: None,
             compute_unit_price_micro_lamports: None,
-            prioritization_fee_lamports: None,
+            prioritization_fee_lamports: Some(PrioritizationFeeLamports::PriorityLevelWithMaxLamports {
+                priority_level: PriorityLevel::VeryHigh,
+                max_lamports: 4000000,
+                global: false,
+            }),
             dynamic_compute_unit_limit: false,
             as_legacy_transaction: false,
             use_shared_accounts: true,
