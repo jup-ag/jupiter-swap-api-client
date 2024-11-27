@@ -10,7 +10,7 @@ use solana_sdk::{
     pubkey::Pubkey,
 };
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapRequest {
     #[serde(with = "field_as_string")]
@@ -51,7 +51,7 @@ pub struct UiSimulationError {
     error: String,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapResponse {
     #[serde(with = "base64_serialize_deserialize")]
