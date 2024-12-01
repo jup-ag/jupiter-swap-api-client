@@ -1,5 +1,7 @@
 use crate::{
-    quote::QuoteResponse, serde_helpers::field_as_string, transaction_config::TransactionConfig,
+    quote::QuoteResponse, 
+    serde_helpers::{field_as_base64, field_as_string}, 
+    transaction_config::TransactionConfig,
 };
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
@@ -50,7 +52,7 @@ pub struct UiSimulationError {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapResponse {
-    #[serde(with = "base64_serialize_deserialize")]
+    #[serde(with = "field_as_base64")]
     pub swap_transaction: Vec<u8>,
     pub last_valid_block_height: u64,
     pub prioritization_fee_lamports: u64,
@@ -58,27 +60,6 @@ pub struct SwapResponse {
     pub prioritization_type: Option<PrioritizationType>,
     pub dynamic_slippage_report: Option<DynamicSlippageReport>,
     pub simulation_error: Option<UiSimulationError>,
-}
-
-pub mod base64_serialize_deserialize {
-    use base64::{engine::general_purpose::STANDARD, Engine};
-    use serde::{de, Deserializer, Serializer};
-
-    use super::*;
-    pub fn serialize<S: Serializer>(v: &Vec<u8>, s: S) -> Result<S::Ok, S::Error> {
-        let base58 = STANDARD.encode(v);
-        String::serialize(&base58, s)
-    }
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let field_string = String::deserialize(deserializer)?;
-        STANDARD
-            .decode(field_string)
-            .map_err(|e| de::Error::custom(format!("base64 decoding error: {:?}", e)))
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -127,7 +108,7 @@ struct InstructionInternal {
     #[serde(with = "field_as_string")]
     pub program_id: Pubkey,
     pub accounts: Vec<AccountMetaInternal>,
-    #[serde(with = "base64_serialize_deserialize")]
+    #[serde(with = "field_as_base64")]
     pub data: Vec<u8>,
 }
 
