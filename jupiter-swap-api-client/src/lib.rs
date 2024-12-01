@@ -4,7 +4,7 @@ use anyhow::{anyhow, Result};
 use quote::{InternalQuoteRequest, QuoteRequest, QuoteResponse};
 use reqwest::{Client, Response};
 use serde::de::DeserializeOwned;
-use swap::{SwapInstructionsResponse, SwapInstructionsResponseInternal, SwapRequest, SwapResponse};
+use swap::{SwapInstructionsResponse, SwapRequest, SwapResponse};
 
 pub mod quote;
 pub mod route_plan_with_metadata;
@@ -79,8 +79,7 @@ impl JupiterSwapApiClient {
             .json(swap_request)
             .send()
             .await?;
-        check_status_code_and_deserialize::<SwapInstructionsResponseInternal>(response)
+        check_status_code_and_deserialize::<SwapInstructionsResponse>(response)
             .await
-            .map(Into::into)
     }
 }
