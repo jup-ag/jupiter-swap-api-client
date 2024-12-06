@@ -52,6 +52,11 @@ impl FromStr for SwapMode {
     }
 }
 
+#[derive(Serialize, Debug, Clone, Default)]
+pub struct ComputeUnitScore {
+    pub max_penalty_bps: Option<f64>,
+}
+
 #[derive(Serialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct QuoteRequest {
@@ -94,13 +99,20 @@ pub struct QuoteRequest {
     /// this might dangerously limit routing ending up giving a bad price.
     /// The max is an estimation and not the exact count
     pub max_accounts: Option<usize>,
-    // Quote type to be used for routing, switches the algorithm
+    /// Quote type to be used for routing, switches the algorithm
     pub quote_type: Option<String>,
-    // Extra args which are quote type specific to allow controlling settings from the top level
+    /// Extra args which are quote type specific to allow controlling settings from the top level
     pub quote_args: Option<HashMap<String, String>>,
-    // enable only full liquid markets as intermediate tokens
+    /// enable only full liquid markets as intermediate tokens
     pub prefer_liquid_dexes: Option<bool>,
+    /// Use the compute unit score to pick a route
+    pub compute_unit_score: Option<ComputeUnitScore>,
+    /// Routing constraints
+    pub routing_constraints: Option<String>,
+    /// Token category based intermediates token
+    pub token_category_based_intermediate_tokens: Option<bool>,
 }
+
 // Essentially the same as QuoteRequest, but without the extra args
 // as we pass the extra args separately
 #[derive(Serialize, Debug, Default, Clone)]
