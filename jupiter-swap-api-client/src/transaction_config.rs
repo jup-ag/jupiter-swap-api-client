@@ -95,7 +95,7 @@ impl Serialize for PrioritizationFeeLamports {
                     priority_level,
                     max_lamports,
                     global,
-                }
+                },
             }
             .serialize(serializer),
         }
@@ -167,8 +167,8 @@ pub struct TransactionConfig {
     /// This enables the usage of shared program accounts. That means no intermediate token accounts or open orders accounts need to be created.
     /// But it also means that the likelihood of hot accounts is higher.
     ///
-    /// Default: true
-    pub use_shared_accounts: bool,
+    /// Default: Optimized internally
+    pub use_shared_accounts: Option<bool>,
     /// This is useful when the instruction before the swap has a transfer that increases the input token amount.
     /// Then, the swap will just use the difference between the token ledger token amount and post token amount.
     ///
@@ -184,30 +184,33 @@ pub struct TransactionConfig {
     pub program_authority_id: Option<u8>,
     /// Dynamic slippage
     pub dynamic_slippage: Option<DynamicSlippageSettings>,
+    /// Slots to expiry of the blockhash
+    pub blockhash_slots_to_expiry: Option<u8>,
+    /// Requests a correct last valid block height,
+    /// this is to allow a smooth transition to agave 2.0 for all consumers, see https://github.com/solana-labs/solana/issues/24526
+    pub correct_last_valid_block_height: bool,
 }
 
 impl Default for TransactionConfig {
     fn default() -> Self {
         Self {
             wrap_and_unwrap_sol: true,
+            allow_optimized_wrapped_sol_token_account: false,
             fee_account: None,
             destination_token_account: None,
-            compute_unit_price_micro_lamports: None,
-            prioritization_fee_lamports: Some(PrioritizationFeeLamports::PriorityLevelWithMaxLamports {
-                priority_level: PriorityLevel::VeryHigh,
-                max_lamports: 4000000,
-                global: false,
-            }),
-            dynamic_compute_unit_limit: false,
-            as_legacy_transaction: false,
-            use_shared_accounts: true,
-            use_token_ledger: false,
-            allow_optimized_wrapped_sol_token_account: false,
             tracking_account: None,
+            compute_unit_price_micro_lamports: None,
+            prioritization_fee_lamports: None,
+            as_legacy_transaction: false,
+            use_shared_accounts: None,
+            use_token_ledger: false,
+            dynamic_compute_unit_limit: false,
             skip_user_accounts_rpc_calls: false,
             keyed_ui_accounts: None,
             program_authority_id: None,
             dynamic_slippage: None,
+            blockhash_slots_to_expiry: None,
+            correct_last_valid_block_height: false,
         }
     }
 }
