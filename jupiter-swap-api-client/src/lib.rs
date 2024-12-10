@@ -1,17 +1,18 @@
 use std::sync::Arc;
 
-use anyhow::anyhow;
-use quote::{QuoteRequest, QuoteResponse};
+use quote::{InternalQuoteRequest, QuoteRequest, QuoteResponse};
 use reqwest::Client;
 pub use reqwest::{Request, Response};
-pub use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, Middleware, Next, Result};
+pub use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, Middleware, Next};
 use serde::de::DeserializeOwned;
+use std::collections::HashMap;
 use swap::{SwapInstructionsResponse, SwapInstructionsResponseInternal, SwapRequest, SwapResponse};
 pub use task_local_extensions::Extensions;
+use thiserror::Error;
 
 pub mod quote;
-mod route_plan_with_metadata;
-mod serde_helpers;
+pub mod route_plan_with_metadata;
+pub mod serde_helpers;
 pub mod swap;
 pub mod transaction_config;
 
@@ -21,25 +22,34 @@ pub struct JupiterSwapApiClient {
     pub client: ClientWithMiddleware,
 }
 
-async fn check_is_success(response: Response) -> anyhow::Result<Response> {
+#[derive(Debug, Error)]
+pub enum ClientError {
+    #[error("Request failed with status {status}: {body}")]
+    RequestFailed {
+        status: reqwest::StatusCode,
+        body: String,
+    },
+    #[error("Failed to deserialize response: {0}")]
+    DeserializationError(#[from] reqwest::Error),
+}
+
+async fn check_is_success(response: Response) -> Result<Response, ClientError> {
     if !response.status().is_success() {
-        return Err(anyhow!(
-            "Request status not ok: {}, body: {:?}",
-            response.status(),
-            response.text().await
-        ));
+        let status = response.status();
+        let body = response.text().await.unwrap_or_default();
+        return Err(ClientError::RequestFailed { status, body });
     }
     Ok(response)
 }
 
 async fn check_status_code_and_deserialize<T: DeserializeOwned>(
     response: Response,
-) -> anyhow::Result<T> {
-    check_is_success(response)
-        .await?
+) -> Result<T, ClientError> {
+    let response = check_is_success(response).await?;
+    response
         .json::<T>()
         .await
-        .map_err(Into::into)
+        .map_err(ClientError::DeserializationError)
 }
 
 impl JupiterSwapApiClient {
@@ -63,17 +73,27 @@ impl JupiterSwapApiClient {
 
         Self { base_path, client }
     }
-
-    pub async fn quote(&self, quote_request: &QuoteRequest) -> anyhow::Result<QuoteResponse> {
+    pub async fn quote(&self, quote_request: &QuoteRequest) -> Result<QuoteResponse, ClientError> {
         let url = format!("{}/quote", self.base_path);
-        let response = self.client.get(url).query(&quote_request).send().await?;
+        let extra_args = quote_request.quote_args.clone();
+        let internal_quote_request = InternalQuoteRequest::from(quote_request.clone());
+        let response = Client::new()
+            .get(url)
+            .query(&internal_quote_request)
+            .query(&extra_args)
+            .send()
+            .await?;
         check_status_code_and_deserialize(response).await
     }
 
-    pub async fn swap(&self, swap_request: &SwapRequest) -> anyhow::Result<SwapResponse> {
-        let response = self
-            .client
+    pub async fn swap(
+        &self,
+        swap_request: &SwapRequest,
+        extra_args: Option<HashMap<String, String>>,
+    ) -> Result<SwapResponse, ClientError> {
+        let response = Client::new()
             .post(format!("{}/swap", self.base_path))
+            .query(&extra_args)
             .json(swap_request)
             .send()
             .await?;
@@ -83,9 +103,8 @@ impl JupiterSwapApiClient {
     pub async fn swap_instructions(
         &self,
         swap_request: &SwapRequest,
-    ) -> anyhow::Result<SwapInstructionsResponse> {
-        let response = self
-            .client
+    ) -> Result<SwapInstructionsResponse, ClientError> {
+        let response = Client::new()
             .post(format!("{}/swap-instructions", self.base_path))
             .json(swap_request)
             .send()
