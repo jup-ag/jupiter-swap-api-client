@@ -4,7 +4,9 @@ pub use http::Extensions;
 use quote::{InternalQuoteRequest, QuoteRequest, QuoteResponse};
 use reqwest::Client;
 pub use reqwest::{Request, Response};
-pub use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, Middleware, Next};
+pub use reqwest_middleware::{
+    ClientBuilder, ClientWithMiddleware, Middleware, Next, Result as MiddlewareResult,
+};
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use swap::{SwapInstructionsResponse, SwapInstructionsResponseInternal, SwapRequest, SwapResponse};
