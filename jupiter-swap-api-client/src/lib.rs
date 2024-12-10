@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+pub use http::Extensions;
 use quote::{InternalQuoteRequest, QuoteRequest, QuoteResponse};
 use reqwest::Client;
 pub use reqwest::{Request, Response};
@@ -7,9 +8,7 @@ pub use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, Middleware, Ne
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use swap::{SwapInstructionsResponse, SwapInstructionsResponseInternal, SwapRequest, SwapResponse};
-pub use task_local_extensions::Extensions;
 use thiserror::Error;
-
 pub mod quote;
 pub mod route_plan_with_metadata;
 pub mod serde_helpers;
@@ -127,7 +126,7 @@ impl JupiterSwapApiClient {
 #[cfg(test)]
 mod tests {
     use async_trait;
-    use reqwest::{Client, Request, Response};
+    use reqwest::{Request, Response};
     use reqwest_middleware::Next;
 
     use super::*;
