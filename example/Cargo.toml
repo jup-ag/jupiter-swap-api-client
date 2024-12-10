@@ -6,7 +6,11 @@ edition = { workspace = true }
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
-jupiter-swap-api-client = { path = "../jupiter-swap-api-client" }
 solana-sdk = { workspace = true }
 solana-client = { workspace = true }
 bincode = "1.3.3"
+
+[dependencies.jupiter-swap-api-client]
+path = "../jupiter-swap-api-client"
+#default-features = false
+#features = ["rustls-tls"]
