@@ -15,3 +15,7 @@ base64 = "0.22.1"
 serde_qs = "0.13.0"
 reqwest = { version = "0.12", features = ["json"] }
 rust_decimal = "1.36.0"
+reqwest-middleware = "0.4"
+async-trait = "0.1.83"
+tokio = { version = "1", features = ["full"] }
+http = "1.2"
