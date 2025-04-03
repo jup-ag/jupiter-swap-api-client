@@ -1,6 +1,6 @@
 [package]
 name = "jupiter-swap-api-client"
-version = "0.1.0"
+version = "0.1.1"
 description = "Jupiter Swap API rust client"
 edition = { workspace = true }
 
