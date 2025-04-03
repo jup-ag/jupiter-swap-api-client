@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 
 use quote::{InternalQuoteRequest, QuoteRequest, QuoteResponse};
 use reqwest::{Client, Response};
@@ -50,9 +50,13 @@ async fn check_status_code_and_deserialize<T: DeserializeOwned>(
 
 impl JupiterSwapApiClient {
     pub fn new(base_path: String) -> Self {
+        let client = Client::builder()
+            .pool_idle_timeout(Some(Duration::from_secs(60)))
+            .build()
+            .unwrap();
         Self { 
             base_path,
-            client: Client::new(),
+            client,
         }
     }
 
