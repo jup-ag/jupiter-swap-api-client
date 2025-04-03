@@ -12,5 +12,5 @@ solana-sdk = { workspace = true }
 solana-account-decoder = { workspace = true }
 base64 = "0.22.1"
 serde_qs = "0.13.0"
-reqwest = { version = "0.11.27", features = ["json"] }
+reqwest = { version = "0.12.12", features = ["json"] }
 rust_decimal = "1.36.0"
