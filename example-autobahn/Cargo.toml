@@ -1,0 +1,12 @@
+[package]
+name = "example-autobahn"
+version = "0.1.0"
+description = ""
+edition = { workspace = true }
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+autobahn-swap-api-client = { path = "../autobahn-swap-api-client" }
+solana-sdk = { workspace = true }
+solana-client = { workspace = true }
+bincode = "1.3.3"

@@ -1,7 +1,9 @@
 [workspace]
 members = [
     "jupiter-swap-api-client",
+    "autobahn-swap-api-client",
     "example",
+    "example-autobahn",
 ]
 
 [workspace.package]
