@@ -73,6 +73,10 @@ pub struct TransactionConfig {
     ///
     /// Default: false
     pub use_token_ledger: bool,
+    /// Number of slots from the current blockhash to replace with a new blockhash.
+    /// This can be used to ensure the transaction is confirmed before the blockhash expires.
+    /// Default is 150 slots, which is around ~60 seconds.
+    pub blockhash_slots_to_expiry: Option<u64>,
 }
 
 impl Default for TransactionConfig {
@@ -87,6 +91,7 @@ impl Default for TransactionConfig {
             as_legacy_transaction: false,
             use_shared_accounts: true,
             use_token_ledger: false,
+            blockhash_slots_to_expiry: None,
         }
     }
 }
