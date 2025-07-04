@@ -10,10 +10,10 @@ To use the `jup-swap-api-client` crate in your Rust project, follow these simple
 
 Add the crate to your `Cargo.toml`:
 
-    ```toml
-    [dependencies]
-    jupiter-swap-api-client = { git = "https://github.com/jup-ag/jupiter-swap-api-client.git", package = "jupiter-swap-api-client"}
-    ```
+  ```toml
+  [dependencies]
+  jupiter-swap-api-client = { git = "https://github.com/jup-ag/jupiter-swap-api-client.git", package = "jupiter-swap-api-client"}
+  ```
 
 ## Examples
 
