@@ -10,21 +10,22 @@ To use the `jup-swap-api-client` crate in your Rust project, follow these simple
 
 Add the crate to your `Cargo.toml`:
 
-    ```toml
-    [dependencies]
-    jupiter-swap-api-client = { git = "https://github.com/jup-ag/jupiter-swap-api-client.git", package = "jupiter-swap-api-client"}
-    ```
+```toml
+[dependencies]
+jupiter-swap-api-client = { git = "https://github.com/jup-ag/jupiter-swap-api-client.git", package = "jupiter-swap-api-client"}
+```
 
 ## Examples
 
-Here's a simplified example of how to use the `jup-swap-api-client` in your Rust application:
+Here's a simplified example of how to use the `jup-swap-api-client` in your Rust application
+(assuming you have the necessary dependencies installed ie the `solana_sdk` and `tokio`):
 
 ```rust
 use jupiter_swap_api_client::{
-    quote::QuoteRequest, swap::SwapRequest, transaction_config::TransactionConfig,
-    JupiterSwapApiClient,
+    JupiterSwapApiClient, quote::QuoteRequest, swap::SwapRequest,
+    transaction_config::TransactionConfig,
 };
-use solana_sdk::pubkey::Pubkey;
+use solana_sdk::{pubkey, pubkey::Pubkey};
 
 const USDC_MINT: Pubkey = pubkey!("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
 const NATIVE_MINT: Pubkey = pubkey!("So11111111111111111111111111111111111111112");
@@ -32,7 +33,8 @@ const TEST_WALLET: Pubkey = pubkey!("2AQdpHJ2JpcEgPiATUXjQxA8QmafFegfQwSLWSprPic
 
 #[tokio::main]
 async fn main() {
-    let jupiter_swap_api_client = JupiterSwapApiClient::new("https://quote-api.jup.ag/v6");
+    let jupiter_swap_api_client =
+        JupiterSwapApiClient::new("https://quote-api.jup.ag/v6".into());
 
     let quote_request = QuoteRequest {
         amount: 1_000_000,
@@ -48,11 +50,14 @@ async fn main() {
 
     // POST /swap
     let swap_response = jupiter_swap_api_client
-        .swap(&SwapRequest {
-            user_public_key: TEST_WALLET,
-            quote_response: quote_response.clone(),
-            config: TransactionConfig::default(),
-        })
+        .swap(
+            &SwapRequest {
+                user_public_key: TEST_WALLET,
+                quote_response: quote_response.clone(),
+                config: TransactionConfig::default(),
+            },
+            None,
+        )
         .await
         .unwrap();
 
@@ -71,8 +76,8 @@ async fn main() {
         .unwrap();
     println!("{swap_instructions:#?}");
 }
-
 ```
+
 For the full example, please refer to the [examples](./example/) directory in this repository.
 
 ### Using Self-hosted APIs
