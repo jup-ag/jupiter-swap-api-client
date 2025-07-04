@@ -66,7 +66,7 @@ pub struct QuoteRequest {
     /// Platform fee in basis points
     pub platform_fee_bps: Option<u8>,
     pub dexes: Option<Vec<String>>,
-    pub excluded_dexes: Option<Vec<String>>,
+    pub exclude_dexes: Option<Vec<String>>,
     /// Quote only direct routes
     pub only_direct_routes: Option<bool>,
     /// Quote fit into legacy transaction
