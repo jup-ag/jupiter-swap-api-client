@@ -87,7 +87,7 @@ pub struct QuoteRequest {
     /// Platform fee in basis points
     pub platform_fee_bps: Option<u8>,
     pub dexes: Option<Dexes>,
-    pub excluded_dexes: Option<Dexes>,
+    pub exclude_dexes: Option<Dexes>,
     /// Quote only direct routes
     pub only_direct_routes: Option<bool>,
     /// Quote fit into legacy transaction
@@ -145,7 +145,7 @@ pub struct InternalQuoteRequest {
     /// Platform fee in basis points
     pub platform_fee_bps: Option<u8>,
     pub dexes: Option<Dexes>,
-    pub excluded_dexes: Option<Dexes>,
+    pub exclude_dexes: Option<Dexes>,
     /// Quote only direct routes
     pub only_direct_routes: Option<bool>,
     /// Quote fit into legacy transaction
@@ -178,7 +178,7 @@ impl From<QuoteRequest> for InternalQuoteRequest {
             minimize_slippage: request.minimize_slippage,
             platform_fee_bps: request.platform_fee_bps,
             dexes: request.dexes,
-            excluded_dexes: request.excluded_dexes,
+            exclude_dexes: request.exclude_dexes,
             only_direct_routes: request.only_direct_routes,
             as_legacy_transaction: request.as_legacy_transaction,
             restrict_intermediate_tokens: request.restrict_intermediate_tokens,
