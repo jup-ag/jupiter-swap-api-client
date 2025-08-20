@@ -15,6 +15,7 @@ pub mod transaction_config;
 #[derive(Clone)]
 pub struct JupiterSwapApiClient {
     pub base_path: String,
+    pub api_key: Option<String>,
 }
 
 #[derive(Debug, Error)]
@@ -48,16 +49,23 @@ async fn check_status_code_and_deserialize<T: DeserializeOwned>(
 }
 
 impl JupiterSwapApiClient {
-    pub fn new(base_path: String) -> Self {
-        Self { base_path }
+    pub fn new(base_path: String, api_key: Option<String>) -> Self {
+        Self { base_path, api_key }
     }
 
     pub async fn quote(&self, quote_request: &QuoteRequest) -> Result<QuoteResponse, ClientError> {
         let url = format!("{}/quote", self.base_path);
         let extra_args = quote_request.quote_args.clone();
         let internal_quote_request = InternalQuoteRequest::from(quote_request.clone());
-        let response = Client::new()
+        let mut request = Client::new()
             .get(url)
+            .header("Content-Type", "application/json");
+
+        if let Some(ref api_key) = self.api_key {
+            request = request.header("x-api-key", api_key);
+        }
+
+        let response = request
             .query(&internal_quote_request)
             .query(&extra_args)
             .send()
@@ -70,12 +78,15 @@ impl JupiterSwapApiClient {
         swap_request: &SwapRequest,
         extra_args: Option<HashMap<String, String>>,
     ) -> Result<SwapResponse, ClientError> {
-        let response = Client::new()
+        let mut request = Client::new()
             .post(format!("{}/swap", self.base_path))
-            .query(&extra_args)
-            .json(swap_request)
-            .send()
-            .await?;
+            .header("Content-Type", "application/json");
+
+        if let Some(ref api_key) = self.api_key {
+            request = request.header("x-api-key", api_key);
+        }
+
+        let response = request.query(&extra_args).json(swap_request).send().await?;
         check_status_code_and_deserialize(response).await
     }
 
@@ -83,11 +94,15 @@ impl JupiterSwapApiClient {
         &self,
         swap_request: &SwapRequest,
     ) -> Result<SwapInstructionsResponse, ClientError> {
-        let response = Client::new()
+        let mut request = Client::new()
             .post(format!("{}/swap-instructions", self.base_path))
-            .json(swap_request)
-            .send()
-            .await?;
+            .header("Content-Type", "application/json");
+
+        if let Some(ref api_key) = self.api_key {
+            request = request.header("x-api-key", api_key);
+        }
+
+        let response = request.json(swap_request).send().await?;
         check_status_code_and_deserialize::<SwapInstructionsResponseInternal>(response)
             .await
             .map(Into::into)
