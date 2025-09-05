@@ -4,7 +4,7 @@
 use std::str::FromStr;
 
 use crate::route_plan_with_metadata::RoutePlanWithMetadata;
-use crate::serde_helpers::field_as_string;
+use crate::serde_helpers::{field_as_string, vec_as_comma_separated};
 use anyhow::{anyhow, Error};
 use serde::{Deserialize, Serialize};
 use solana_sdk::pubkey::Pubkey;
@@ -65,7 +65,9 @@ pub struct QuoteRequest {
     pub slippage_bps: u16,
     /// Platform fee in basis points
     pub platform_fee_bps: Option<u8>,
+    #[serde(with = "vec_as_comma_separated")]
     pub dexes: Option<Vec<String>>,
+    #[serde(with = "vec_as_comma_separated")]
     pub exclude_dexes: Option<Vec<String>>,
     /// Quote only direct routes
     pub only_direct_routes: Option<bool>,
