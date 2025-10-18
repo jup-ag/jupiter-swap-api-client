@@ -43,8 +43,8 @@ pub struct DynamicSlippageReport {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UiSimulationError {
-    error_code: String,
-    error: String,
+    pub error_code: String,
+    pub error: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -196,5 +196,14 @@ impl From<SwapInstructionsResponseInternal> for SwapInstructionsResponse {
             dynamic_slippage_report: value.dynamic_slippage_report,
             simulation_error: value.simulation_error,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test] fn simulation_error_fields_accessible() {
+        let error = serde_json::from_value::<super::SwapResponse>(serde_json::json!({"swapTransaction":"AQID","lastValidBlockHeight":1,"prioritizationFeeLamports":2,"computeUnitLimit":3,"prioritizationType":null,"dynamicSlippageReport":null,"simulationError":{"errorCode":"code","error":"message"}})).unwrap().simulation_error.unwrap();
+        assert_eq!(error.error_code, "code");
+        assert_eq!(error.error, "message");
     }
 }
