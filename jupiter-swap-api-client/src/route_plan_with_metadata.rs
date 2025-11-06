@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use solana_sdk::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 use crate::serde_helpers::field_as_string;
 
