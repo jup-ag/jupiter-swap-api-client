@@ -8,7 +8,7 @@ use crate::serde_helpers::field_as_string;
 use anyhow::{anyhow, Error};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
-use solana_sdk::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
