@@ -6,13 +6,32 @@ license = "Apache-2.0"
 edition = { workspace = true }
 
 [dependencies]
-anyhow = "1"
+# --- Core Utilities & Error Handling ---
+
+# Simple, high-level error handling (Result<T, anyhow::Error>)
+anyhow = "1" 
+# Custom error type definitions
+thiserror = "2" 
+# Base64 encoding/decoding, often needed for transaction serialization/deserialization
+base64 = "0.22.1" 
+# Financial data handling with arbitrary precision to avoid floating-point errors
+rust_decimal = "1.36.0" 
+
+# --- Serialization & Deserialization ---
+
+# Core serialization framework (with derive feature enabled for data structs)
 serde = { version = "1.0.159", features = ["derive"] }
+# JSON serialization/deserialization
 serde_json = "1.0.95"
+# Handling query string parsing (e.g., complex GET request parameters)
+serde_qs = "0.13.0" 
+
+# --- API Communication ---
+
+# HTTP client for making API requests (with JSON feature enabled)
+reqwest = { version = "0.12", features = ["json"] } 
+
+# --- Solana Dependencies (using workspace versions for consistency) ---
+
 solana-sdk = { workspace = true }
 solana-account-decoder = { workspace = true }
-thiserror = "2"
-base64 = "0.22.1"
-serde_qs = "0.13.0"
-reqwest = { version = "0.12", features = ["json"] }
-rust_decimal = "1.36.0"
