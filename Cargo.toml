@@ -1,14 +1,29 @@
+# --- CARGO WORKSPACE CONFIGURATION ---
+
 [workspace]
+# List all packages (crates) that belong to this monorepo workspace.
 members = [
     "jupiter-swap-api-client",
-    "example",
+    "example", # Typically an executable demonstrating the client functionality.
 ]
+
+# Use the newest dependency resolver, recommended for the 2021 edition and newer.
 resolver = "2"
 
+
+# Default package metadata for all crates within this workspace.
 [workspace.package]
 edition = "2021"
 
+
+# Define common dependencies for all workspace members.
+# Using the workspace table ensures that all members use the EXACT same version, 
+# improving consistency and reducing build times.
 [workspace.dependencies]
+# Solana libraries are core dependencies for this project.
+# The loose constraint ("2") means it accepts versions ^2.0.0 (e.g., 2.x.y).
+# NOTE: For better reproducibility, consider pinning to a specific minor version, 
+# like "2.5.0", if features are version-dependent.
 solana-sdk = "2"
 solana-client = "2"
 solana-account-decoder = "2"
