@@ -3,16 +3,30 @@ name = "jupiter-swap-api-client"
 version = "0.2.0"
 description = "Jupiter Swap API rust client"
 license = "Apache-2.0"
+# Inherit the edition from the workspace configuration (e.g., "2021")
 edition = { workspace = true }
 
 [dependencies]
+# Error handling utilities
 anyhow = "1"
-serde = { version = "1.0.159", features = ["derive"] }
-serde_json = "1.0.95"
-solana-sdk = { workspace = true }
-solana-account-decoder = { workspace = true }
-thiserror = "2"
-base64 = "0.22.1"
-serde_qs = "0.13.0"
+thiserror = "1" # Cleaned up to use the current major version "1"
+
+# Serialization and Deserialization (JSON handling)
+serde = { version = "1", features = ["derive"] } # Simplified version constraint
+serde_json = "1" # Simplified version constraint
+serde_qs = "0.13" # Query string serialization (for GET requests)
+
+# HTTP client for making API requests
 reqwest = { version = "0.12", features = ["json"] }
-rust_decimal = "1.36.0"
+
+# Data encoding (used for transaction strings or signatures)
+base64 = "0.22"
+
+# Financial/Decimal types for high-precision calculations
+rust_decimal = "1.36"
+
+# --- Solana Ecosystem Dependencies (Managed by Workspace) ---
+# Core types and structs for Solana development.
+solana-sdk = { workspace = true } 
+# Utilities for decoding account data received from the Solana cluster.
+solana-account-decoder = { workspace = true }
