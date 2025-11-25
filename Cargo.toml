@@ -1,14 +1,30 @@
+# --- Workspace Definition ---
 [workspace]
+# Defines the crates/packages included in this workspace.
 members = [
-    "jupiter-swap-api-client",
-    "example",
+    "jupiter-swap-api-client", # Core library for the Jupiter API client
+    "example",                 # Example usage demonstrating the client
 ]
+# Specifies the dependency resolver version (Rust 1.64+ default, recommended).
 resolver = "2"
 
+# --- Workspace Package Defaults (Applied to all members) ---
 [workspace.package]
+# Set the Rust edition for all member crates.
 edition = "2021"
+# NOTE: Other common fields like version, authors, and license can be added here
+# to avoid duplication in member Cargo.toml files.
+# version = "0.1.0"
+# license = "MIT"
+# authors = ["Your Name <you@example.com>"]
 
+# --- Centralized Dependency Management ---
+# Dependencies listed here can be easily referenced by member crates using 
+# `package_name = { workspace = true }`. This ensures all crates use the same version.
 [workspace.dependencies]
-solana-sdk = "2"
+# Solana SDK (Core types and transaction logic)
+solana-sdk = "2" 
+# Solana Client (RPC client for interacting with the cluster)
 solana-client = "2"
+# Solana Account Decoder (Utilities for decoding account data)
 solana-account-decoder = "2"
