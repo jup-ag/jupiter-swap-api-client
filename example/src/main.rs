@@ -15,10 +15,19 @@ pub const TEST_WALLET: Pubkey = pubkey!("2AQdpHJ2JpcEgPiATUXjQxA8QmafFegfQwSLWSp
 
 #[tokio::main]
 async fn main() {
-    let api_base_url = env::var("API_BASE_URL").unwrap_or("https://quote-api.jup.ag/v6".into());
+    let api_base_url = env::var("API_BASE_URL").unwrap_or("https://api.jup.ag/v6".into());
     println!("Using base url: {}", api_base_url);
 
-    let jupiter_swap_api_client = JupiterSwapApiClient::new(api_base_url);
+    let jupiter_swap_api_client = match env::var("JUPITER_API_KEY") {
+        Ok(api_key) => {
+            println!("Using API key authentication");
+            JupiterSwapApiClient::with_api_key(api_base_url, api_key)
+        }
+        Err(_) => {
+            println!("No API key provided, using client without authentication");
+            JupiterSwapApiClient::new(api_base_url)
+        }
+    };
 
     let quote_request = QuoteRequest {
         amount: 1_000_000,
