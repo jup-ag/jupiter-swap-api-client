@@ -53,7 +53,7 @@ async fn main() {
     // Using the new production API with API key (recommended)
     let api_key = "your-api-key-here".to_string();
     let jupiter_swap_api_client = JupiterSwapApiClient::with_api_key(
-        "https://api.jup.ag/v6".to_string(),
+        "https://api.jup.ag/swap/v1".to_string(),
         api_key
     );
 
