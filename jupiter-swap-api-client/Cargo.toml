@@ -6,14 +6,14 @@ license = "Apache-2.0"
 edition = { workspace = true }
 
 [dependencies]
-anyhow = "1"
-serde = { version = "1.0.159", features = ["derive"] }
-serde_json = "1.0.95"
+anyhow = { workspace = true }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 solana-pubkey = { workspace = true }
 solana-instruction = { workspace = true }
 solana-account-decoder = { workspace = true }
 thiserror = "2"
-base64 = "0.22.1"
-serde_qs = "0.13.0"
+base64 = "0.22"
+serde_qs = "0.13"
 reqwest = { version = "0.12", features = ["json"] }
-rust_decimal = "1.36.0"
+rust_decimal = "1.36"
