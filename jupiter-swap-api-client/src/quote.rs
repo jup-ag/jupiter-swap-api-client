@@ -38,12 +38,6 @@ pub struct SwapInfo {
     /// Estimated output amount from the AMM pool (factoring in token decimals).
     #[serde(with = "field_as_string")]
     pub out_amount: u64,
-    /// The amount of fees taken by the AMM for this swap step.
-    #[serde(with = "field_as_string")]
-    pub fee_amount: u64,
-    /// The mint of the token used to pay the fee.
-    #[serde(with = "field_as_string")]
-    pub fee_mint: Pubkey,
 }
 
 // --- Swap Mode Enumeration ---
