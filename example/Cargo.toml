@@ -11,4 +11,5 @@ solana-client = { workspace = true }
 solana-pubkey = { workspace = true }
 solana-signer = "3"
 solana-transaction = "3"
+anyhow = { workspace = true }
 bincode = "1.3.3"
