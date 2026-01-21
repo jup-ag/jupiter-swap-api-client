@@ -1,18 +1,37 @@
 [package]
 name = "jupiter-swap-api-client"
 version = "0.2.0"
-description = "Jupiter Swap API rust client"
+description = "High-performance Rust client for the Jupiter Swap API on Solana"
 license = "Apache-2.0"
 edition = { workspace = true }
+readme = "README.md"
+repository = "https://github.com/your-repo/jupiter-swap-api-client"
+categories = ["cryptography::cryptocurrencies", "api-bindings"]
+keywords = ["solana", "jupiter", "swap", "dex", "api"]
 
 [dependencies]
+# Error Handling
 anyhow = { workspace = true }
-thiserror = "1"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+thiserror = "1.0"
+
+# Serialization & Formatting
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0", features = ["preserve_order"] }
 serde_qs = "0.13"
-reqwest = { version = "0.12", features = ["json"] }
+rust_decimal = { version = "1.36", features = ["serde-float"] }
 base64 = "0.22"
-rust_decimal = "1.36"
+
+# Networking - Optimized for Performance and Security
+reqwest = { version = "0.12", default-features = false, features = [
+    "json", 
+    "rustls-tls", # Safer and more portable than native-tls
+    "gzip", 
+    "brotli"
+] }
+
+# Solana Ecosystem - Pinned to workspace for consistency
 solana-sdk = { workspace = true } 
 solana-account-decoder = { workspace = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full"] } # Essential for testing async clients
