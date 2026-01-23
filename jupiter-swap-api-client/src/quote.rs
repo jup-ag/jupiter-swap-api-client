@@ -19,25 +19,32 @@ type Dexes = String;
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
-/// Swap details for a single step in a multi-hop route.
+/// Swap information of each Swap occurred in the route paths
 pub struct SwapInfo {
-    /// The PublicKey of the Automated Market Maker (AMM) pool or program.
     #[serde(with = "field_as_string")]
     pub amm_key: Pubkey,
-    /// The human-readable label for the DEX/AMM (e.g., "Raydium_V4").
     pub label: String,
-    /// The input token mint for this specific swap step.
     #[serde(with = "field_as_string")]
     pub input_mint: Pubkey,
-    /// The output token mint for this specific swap step.
     #[serde(with = "field_as_string")]
     pub output_mint: Pubkey,
-    /// Estimated input amount into the AMM pool (factoring in token decimals).
+    /// An estimation of the input amount into the AMM
     #[serde(with = "field_as_string")]
     pub in_amount: u64,
-    /// Estimated output amount from the AMM pool (factoring in token decimals).
+    /// An estimation of the output amount into the AMM
     #[serde(with = "field_as_string")]
     pub out_amount: u64,
+    /// Fee amount (optional - not always returned by Jupiter)
+    /// Note: When present in the API response, this comes as a string but is rarely included
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fee_amount: Option<String>,
+    /// Fee token mint (optional - not always returned by Jupiter)  
+    /// Note: When present in the API response, this comes as a string but is rarely included
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fee_mint: Option<String>,
+    /// Output amount after slippage is applied
+    #[serde(with = "field_as_string")]
+    pub out_amount_after_slippage: u64,
 }
 
 // --- Swap Mode Enumeration ---
@@ -60,7 +67,10 @@ impl FromStr for SwapMode {
         match s {
             "ExactIn" => Ok(Self::ExactIn),
             "ExactOut" => Ok(Self::ExactOut),
-            _ => Err(anyhow!("'{}' is not a valid SwapMode. Expected 'ExactIn' or 'ExactOut'.", s)),
+            _ => Err(anyhow!(
+                "'{}' is not a valid SwapMode. Expected 'ExactIn' or 'ExactOut'.",
+                s
+            )),
         }
     }
 }
@@ -141,7 +151,7 @@ impl Default for QuoteRequest {
             amount: 0,
             swap_mode: None,
             // Recommended default slippage for safe operation (0.5% or 50 BPS).
-            slippage_bps: 50, 
+            slippage_bps: 50,
             auto_slippage: None,
             max_auto_slippage_bps: None,
             compute_auto_slippage: false,
@@ -164,7 +174,6 @@ impl Default for QuoteRequest {
         }
     }
 }
-
 
 #[derive(Serialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]

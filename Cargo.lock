@@ -1917,6 +1917,7 @@ dependencies = [
  "solana-account-decoder",
  "solana-sdk",
  "thiserror",
+ "tracing",
 ]
 
 [[package]]

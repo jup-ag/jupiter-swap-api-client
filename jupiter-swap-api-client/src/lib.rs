@@ -5,6 +5,7 @@ use reqwest::{Client, Response};
 use serde::de::DeserializeOwned;
 use swap::{SwapInstructionsResponse, SwapInstructionsResponseInternal, SwapRequest, SwapResponse};
 use thiserror::Error;
+use tracing::debug;
 
 pub mod quote;
 pub mod route_plan_with_metadata;
@@ -15,6 +16,7 @@ pub mod transaction_config;
 #[derive(Clone)]
 pub struct JupiterSwapApiClient {
     pub base_path: String,
+    pub api_key: String,
 }
 
 #[derive(Debug, Error)]
@@ -26,6 +28,8 @@ pub enum ClientError {
     },
     #[error("Failed to deserialize response: {0}")]
     DeserializationError(#[from] reqwest::Error),
+    #[error("Failed to parse JSON response: {0}")]
+    JsonParseError(#[from] serde_json::Error),
 }
 
 async fn check_is_success(response: Response) -> Result<Response, ClientError> {
@@ -41,15 +45,26 @@ async fn check_status_code_and_deserialize<T: DeserializeOwned>(
     response: Response,
 ) -> Result<T, ClientError> {
     let response = check_is_success(response).await?;
-    response
-        .json::<T>()
-        .await
-        .map_err(ClientError::DeserializationError)
+
+    // Get the raw response text for logging
+    let response_text = response.text().await?;
+
+    // Log the raw response at debug level
+    debug!(
+        response_length = response_text.len(),
+        "Jupiter API raw response: {}", response_text
+    );
+
+    // Attempt to deserialize from the text
+    serde_json::from_str::<T>(&response_text).map_err(|e| {
+        debug!("JSON deserialization error: {}", e);
+        ClientError::JsonParseError(e)
+    })
 }
 
 impl JupiterSwapApiClient {
-    pub fn new(base_path: String) -> Self {
-        Self { base_path }
+    pub fn new(base_path: String, api_key: String) -> Self {
+        Self { base_path, api_key }
     }
 
     pub async fn quote(&self, quote_request: &QuoteRequest) -> Result<QuoteResponse, ClientError> {
@@ -60,6 +75,7 @@ impl JupiterSwapApiClient {
             .get(url)
             .query(&internal_quote_request)
             .query(&extra_args)
+            .header("x-api-key", &self.api_key)
             .send()
             .await?;
         check_status_code_and_deserialize(response).await
@@ -74,6 +90,7 @@ impl JupiterSwapApiClient {
             .post(format!("{}/swap", self.base_path))
             .query(&extra_args)
             .json(swap_request)
+            .header("x-api-key", &self.api_key)
             .send()
             .await?;
         check_status_code_and_deserialize(response).await
@@ -86,6 +103,7 @@ impl JupiterSwapApiClient {
         let response = Client::new()
             .post(format!("{}/swap-instructions", self.base_path))
             .json(swap_request)
+            .header("x-api-key", &self.api_key)
             .send()
             .await?;
         check_status_code_and_deserialize::<SwapInstructionsResponseInternal>(response)

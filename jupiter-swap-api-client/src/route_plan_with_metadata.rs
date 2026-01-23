@@ -29,8 +29,13 @@ pub struct SwapInfo {
     /// An estimation of the output amount into the AMM
     #[serde(with = "field_as_string")]
     pub out_amount: u64,
+    /// Fee amount (optional - not always returned by Jupiter)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fee_amount: Option<String>,
+    /// Fee token mint (optional - not always returned by Jupiter)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fee_mint: Option<String>,
+    /// Output amount after slippage is applied
     #[serde(with = "field_as_string")]
-    pub fee_amount: u64,
-    #[serde(with = "field_as_string")]
-    pub fee_mint: Pubkey,
+    pub out_amount_after_slippage: u64,
 }

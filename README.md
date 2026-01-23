@@ -32,7 +32,11 @@ const TEST_WALLET: Pubkey = pubkey!("2AQdpHJ2JpcEgPiATUXjQxA8QmafFegfQwSLWSprPic
 
 #[tokio::main]
 async fn main() {
-    let jupiter_swap_api_client = JupiterSwapApiClient::new("https://quote-api.jup.ag/v6");
+    // Create client with API key (required)
+    let jupiter_swap_api_client = JupiterSwapApiClient::new(
+        "https://quote-api.jup.ag/v6".to_string(),
+        "your-api-key".to_string()
+    );
 
     let quote_request = QuoteRequest {
         amount: 1_000_000,
@@ -81,11 +85,23 @@ You can set custom URLs via environment variables for any self-hosted Jupiter AP
 
 ```
 API_BASE_URL=https://hosted.api
+JUPITER_API_KEY=your-api-key
 ```
 
-### Paid Hosted APIs
+### API Key Requirement
 
-You can also check out some of the [paid hosted APIs](https://station.jup.ag/docs/apis/self-hosted#paid-hosted-apis).
+**Note:** An API key is now required for all requests. The API key will be automatically included as the `x-api-key` header in all requests.
+
+You can obtain an API key from [paid hosted APIs](https://dev.jup.ag/portal/setup).
+
+Usage:
+
+```rust
+let jupiter_swap_api_client = JupiterSwapApiClient::new(
+    "https://quote-api.jup.ag/v6".to_string(),
+    "your-api-key".to_string()
+);
+```
 
 ## Additional Resources
 

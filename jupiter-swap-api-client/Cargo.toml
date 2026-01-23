@@ -16,3 +16,4 @@ base64 = "0.22"
 rust_decimal = "1.36"
 solana-sdk = { workspace = true } 
 solana-account-decoder = { workspace = true }
+tracing = "0.1"
