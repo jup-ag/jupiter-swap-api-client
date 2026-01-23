@@ -4,7 +4,7 @@
 use std::{collections::HashMap, str::FromStr};
 
 use crate::route_plan_with_metadata::RoutePlanWithMetadata;
-use crate::serde_helpers::field_as_string;
+use crate::serde_helpers::{field_as_string, option_field_as_string};
 use anyhow::{anyhow, Error};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
@@ -36,14 +36,14 @@ pub struct SwapInfo {
     pub out_amount: u64,
     /// Fee amount (optional - not always returned by Jupiter)
     #[serde(
-        with = "field_as_string",
+        with = "option_field_as_string",
         skip_serializing_if = "Option::is_none",
         default
     )]
     pub fee_amount: Option<u64>,
     /// Fee token mint (optional - not always returned by Jupiter)
     #[serde(
-        with = "field_as_string",
+        with = "option_field_as_string",
         skip_serializing_if = "Option::is_none",
         default
     )]
