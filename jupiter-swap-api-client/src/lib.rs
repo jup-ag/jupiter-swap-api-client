@@ -52,8 +52,7 @@ async fn check_status_code_and_deserialize<T: DeserializeOwned>(
     // Log the raw response at debug level
     debug!(
         response_length = response_text.len(),
-        "Jupiter API raw response: {}", 
-        response_text
+        "Jupiter API raw response: {}", response_text
     );
 
     // Attempt to deserialize from the text
