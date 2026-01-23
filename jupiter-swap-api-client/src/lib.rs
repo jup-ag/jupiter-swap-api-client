@@ -5,6 +5,7 @@ use reqwest::{Client, Response};
 use serde::de::DeserializeOwned;
 use swap::{SwapInstructionsResponse, SwapInstructionsResponseInternal, SwapRequest, SwapResponse};
 use thiserror::Error;
+use tracing::debug;
 
 pub mod quote;
 pub mod route_plan_with_metadata;
@@ -27,6 +28,8 @@ pub enum ClientError {
     },
     #[error("Failed to deserialize response: {0}")]
     DeserializationError(#[from] reqwest::Error),
+    #[error("Failed to parse JSON response: {0}")]
+    JsonParseError(#[from] serde_json::Error),
 }
 
 async fn check_is_success(response: Response) -> Result<Response, ClientError> {
@@ -42,10 +45,22 @@ async fn check_status_code_and_deserialize<T: DeserializeOwned>(
     response: Response,
 ) -> Result<T, ClientError> {
     let response = check_is_success(response).await?;
-    response
-        .json::<T>()
-        .await
-        .map_err(ClientError::DeserializationError)
+
+    // Get the raw response text for logging
+    let response_text = response.text().await?;
+
+    // Log the raw response at debug level
+    debug!(
+        response_length = response_text.len(),
+        "Jupiter API raw response: {}", 
+        response_text
+    );
+
+    // Attempt to deserialize from the text
+    serde_json::from_str::<T>(&response_text).map_err(|e| {
+        debug!("JSON deserialization error: {}", e);
+        ClientError::JsonParseError(e)
+    })
 }
 
 impl JupiterSwapApiClient {

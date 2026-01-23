@@ -4,7 +4,7 @@
 use std::{collections::HashMap, str::FromStr};
 
 use crate::route_plan_with_metadata::RoutePlanWithMetadata;
-use crate::serde_helpers::{field_as_string, option_field_as_string};
+use crate::serde_helpers::field_as_string;
 use anyhow::{anyhow, Error};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
@@ -35,19 +35,13 @@ pub struct SwapInfo {
     #[serde(with = "field_as_string")]
     pub out_amount: u64,
     /// Fee amount (optional - not always returned by Jupiter)
-    #[serde(
-        with = "option_field_as_string",
-        skip_serializing_if = "Option::is_none",
-        default
-    )]
-    pub fee_amount: Option<u64>,
-    /// Fee token mint (optional - not always returned by Jupiter)
-    #[serde(
-        with = "option_field_as_string",
-        skip_serializing_if = "Option::is_none",
-        default
-    )]
-    pub fee_mint: Option<Pubkey>,
+    /// Note: When present in the API response, this comes as a string but is rarely included
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fee_amount: Option<String>,
+    /// Fee token mint (optional - not always returned by Jupiter)  
+    /// Note: When present in the API response, this comes as a string but is rarely included
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fee_mint: Option<String>,
     /// Output amount after slippage is applied
     #[serde(with = "field_as_string")]
     pub out_amount_after_slippage: u64,

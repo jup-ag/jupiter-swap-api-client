@@ -21,12 +21,13 @@ where
     D: Deserializer<'de>,
     <T as FromStr>::Err: std::fmt::Debug,
 {
+    // Deserialize as Option<String> to handle both null and missing fields
     let opt: Option<String> = Option::deserialize(deserializer)?;
     match opt {
-        Some(s) => s
+        Some(s) if !s.is_empty() => s
             .parse()
             .map(Some)
             .map_err(|e| de::Error::custom(format!("Parse error: {:?}", e))),
-        None => Ok(None),
+        _ => Ok(None),
     }
 }
