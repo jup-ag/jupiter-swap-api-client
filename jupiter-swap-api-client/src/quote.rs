@@ -1,5 +1,5 @@
-//! Quote data structure for quoting and quote response
-//!
+//! Quote data structures for requesting a swap price and handling the response.
+//! This is typically used by a DeFi routing or aggregation service on Solana.
 
 use std::{collections::HashMap, str::FromStr};
 
@@ -10,162 +10,215 @@ use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use solana_sdk::pubkey::Pubkey;
 
+// --- Utility Type ---
+
+/// Comma-delimited list of Decentralized Exchange (DEX) labels (e.g., "Raydium,Orca").
+type Dexes = String;
+
+// --- Swap Information Structure ---
+
 #[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
-/// Swap information of each Swap occurred in the route paths
+/// Swap details for a single step in a multi-hop route.
 pub struct SwapInfo {
+    /// The PublicKey of the Automated Market Maker (AMM) pool or program.
     #[serde(with = "field_as_string")]
     pub amm_key: Pubkey,
+    /// The human-readable label for the DEX/AMM (e.g., "Raydium_V4").
     pub label: String,
+    /// The input token mint for this specific swap step.
     #[serde(with = "field_as_string")]
     pub input_mint: Pubkey,
+    /// The output token mint for this specific swap step.
     #[serde(with = "field_as_string")]
     pub output_mint: Pubkey,
-    /// An estimation of the input amount into the AMM
+    /// Estimated input amount into the AMM pool (factoring in token decimals).
     #[serde(with = "field_as_string")]
     pub in_amount: u64,
-    /// An estimation of the output amount into the AMM
+    /// Estimated output amount from the AMM pool (factoring in token decimals).
     #[serde(with = "field_as_string")]
     pub out_amount: u64,
-    #[serde(with = "field_as_string")]
-    pub fee_amount: u64,
-    #[serde(with = "field_as_string")]
-    pub fee_mint: Pubkey,
 }
 
+// --- Swap Mode Enumeration ---
+
 #[derive(Serialize, Deserialize, Default, PartialEq, Clone, Debug)]
+/// Defines the direction of the swap, based on which amount is fixed.
 pub enum SwapMode {
+    /// The input amount is fixed; slippage occurs on the output amount. (Default)
     #[default]
     ExactIn,
+    /// The output amount is fixed (e.g., for payments); slippage occurs on the input amount.
     ExactOut,
 }
 
 impl FromStr for SwapMode {
     type Err = Error;
 
+    /// Attempts to convert a string slice into a SwapMode enum.
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         match s {
             "ExactIn" => Ok(Self::ExactIn),
             "ExactOut" => Ok(Self::ExactOut),
-            _ => Err(anyhow!("{} is not a valid SwapMode", s)),
+            _ => Err(anyhow!("'{}' is not a valid SwapMode. Expected 'ExactIn' or 'ExactOut'.", s)),
         }
     }
 }
 
+// --- Request Sub-Structures ---
+
 #[derive(Serialize, Debug, Clone, Default)]
+/// Represents scoring configuration based on Transaction Compute Units (CUs).
 pub struct ComputeUnitScore {
+    /// Maximum penalty (in basis points) applied to a route for high CU usage.
     pub max_penalty_bps: Option<f64>,
 }
 
-#[derive(Serialize, Debug, Default, Clone)]
+// --- Main Request Structures ---
+
+#[derive(Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
+/// Full request payload sent by the client to obtain a swap quote and route plan.
 pub struct QuoteRequest {
+    /// The mint of the token being swapped (given).
     #[serde(with = "field_as_string")]
     pub input_mint: Pubkey,
+    /// The mint of the token to be received (wanted).
     #[serde(with = "field_as_string")]
     pub output_mint: Pubkey,
-    /// The amount to swap, have to factor in the token decimals.
+    /// The amount of the input or output token (depending on `swap_mode`), factoring in token decimals.
     #[serde(with = "field_as_string")]
     pub amount: u64,
-    /// (ExactIn or ExactOut) Defaults to ExactIn.
-    /// ExactOut is for supporting use cases where you need an exact token amount, like payments.
-    /// In this case the slippage is on the input token.
+    /// The swap direction (ExactIn or ExactOut). Defaults to ExactIn.
     pub swap_mode: Option<SwapMode>,
-    /// Allowed slippage in basis points
+    /// The maximum allowed price slippage, measured in basis points (e.g., 50 for 0.5%).
     pub slippage_bps: u16,
-    /// Default is false.
-    /// By setting this to true, our API will suggest smart slippage info that you can use.
-    /// slippageBps is what we suggest you to use. Additionally, you should check out max_auto_slippage_bps and auto_slippage_collision_usd_value.
+    /// If true, the API suggests a dynamic 'smart' slippage. Defaults to false.
     pub auto_slippage: Option<bool>,
-    /// The max amount of slippage in basis points that you are willing to accept for auto slippage.
+    /// The absolute upper limit for auto-slippage calculation (in basis points).
     pub max_auto_slippage_bps: Option<u16>,
+    /// Enables or disables the computation of auto slippage.
     pub compute_auto_slippage: bool,
-    /// The max amount of USD value that you are willing to accept for auto slippage.
+    /// The USD value collision threshold for auto slippage calculation.
     pub auto_slippage_collision_usd_value: Option<u32>,
-    /// Quote with a greater amount to find the route to minimize slippage
+    /// If true, the router tries a greater input amount to find a route that minimizes the effective slippage.
     pub minimize_slippage: Option<bool>,
-    /// Platform fee in basis points
+    /// Optional platform fee to be collected (in basis points).
     pub platform_fee_bps: Option<u8>,
+    /// A comma-separated list of DEXes to explicitly include in the search.
     pub dexes: Option<Dexes>,
+    /// A comma-separated list of DEXes to explicitly exclude from the search.
     pub excluded_dexes: Option<Dexes>,
-    /// Quote only direct routes
+    /// If true, restricts routing to only direct token pair swaps (no multi-hop).
     pub only_direct_routes: Option<bool>,
-    /// Quote fit into legacy transaction
+    /// If true, the resulting transaction will attempt to fit into a legacy (non-versioned) transaction format.
     pub as_legacy_transaction: Option<bool>,
-    /// Restrict intermediate tokens to a top token set that has stable liquidity.
-    /// This will help to ease potential high slippage error rate when swapping with minimal impact on pricing.
+    /// Restricts intermediate tokens to a list known to have stable liquidity.
     pub restrict_intermediate_tokens: Option<bool>,
-    /// Find a route given a maximum number of accounts involved,
-    /// this might dangerously limit routing ending up giving a bad price.
-    /// The max is an estimation and not the exact count
+    /// Estimates and restricts the route to fit within a max number of accounts involved. Use with caution.
     pub max_accounts: Option<usize>,
-    /// Quote type to be used for routing, switches the algorithm
+    /// Identifier for the routing algorithm to be used.
     pub quote_type: Option<String>,
-    /// Extra args which are quote type specific to allow controlling settings from the top level
+    /// Extra parameters specific to the chosen quote_type algorithm.
     pub quote_args: Option<HashMap<String, String>>,
-    /// enable only full liquid markets as intermediate tokens
+    /// If true, favors DEXes that are fully liquid when selecting intermediate tokens.
     pub prefer_liquid_dexes: Option<bool>,
-    /// Use the compute unit score to pick a route
+    /// Configuration for routing based on transaction compute unit score.
     pub compute_unit_score: Option<ComputeUnitScore>,
-    /// Routing constraints
+    /// Custom string constraints passed to the router (implementation-specific).
     pub routing_constraints: Option<String>,
-    /// Token category based intermediates token
+    /// If true, uses token category information (e.g., stablecoin, wrapped asset) for intermediate token selection.
     pub token_category_based_intermediate_tokens: Option<bool>,
 }
 
-// Essentially the same as QuoteRequest, but without the extra args
-// as we pass the extra args separately
+// Implement Default manually to provide a safer default slippage_bps.
+impl Default for QuoteRequest {
+    fn default() -> Self {
+        QuoteRequest {
+            // Standard default fields
+            input_mint: Pubkey::default(),
+            output_mint: Pubkey::default(),
+            amount: 0,
+            swap_mode: None,
+            // Recommended default slippage for safe operation (0.5% or 50 BPS).
+            slippage_bps: 50, 
+            auto_slippage: None,
+            max_auto_slippage_bps: None,
+            compute_auto_slippage: false,
+            auto_slippage_collision_usd_value: None,
+            minimize_slippage: None,
+            platform_fee_bps: None,
+            dexes: None,
+            excluded_dexes: None,
+            only_direct_routes: None,
+            as_legacy_transaction: None,
+            restrict_intermediate_tokens: None,
+            max_accounts: None,
+            quote_type: None,
+            prefer_liquid_dexes: None,
+            compute_unit_score: None,
+            routing_constraints: None,
+            token_category_based_intermediate_tokens: None,
+            // QuoteRequest specific fields
+            quote_args: None,
+        }
+    }
+}
+
+
 #[derive(Serialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
+/// Internal structure used by the routing engine, excluding fields unnecessary for the core logic.
+/// This structure is derived from `QuoteRequest` but omits external/extra configuration fields.
 pub struct InternalQuoteRequest {
+    /// The mint of the token being swapped (given).
     #[serde(with = "field_as_string")]
     pub input_mint: Pubkey,
+    /// The mint of the token to be received (wanted).
     #[serde(with = "field_as_string")]
     pub output_mint: Pubkey,
-    /// The amount to swap, have to factor in the token decimals.
+    /// The amount to swap, factoring in the token decimals.
     #[serde(with = "field_as_string")]
     pub amount: u64,
-    /// (ExactIn or ExactOut) Defaults to ExactIn.
-    /// ExactOut is for supporting use cases where you need an exact token amount, like payments.
-    /// In this case the slippage is on the input token.
+    /// The swap direction (ExactIn or ExactOut).
     pub swap_mode: Option<SwapMode>,
-    /// Allowed slippage in basis points
+    /// Allowed slippage in basis points.
     pub slippage_bps: u16,
-    /// Default is false.
-    /// By setting this to true, our API will suggest smart slippage info that you can use.
-    /// slippageBps is what we suggest you to use. Additionally, you should check out max_auto_slippage_bps and auto_slippage_collision_usd_value.
+    /// If true, the API will suggest smart slippage.
     pub auto_slippage: Option<bool>,
-    /// The max amount of slippage in basis points that you are willing to accept for auto slippage.
+    /// The max amount of slippage in basis points for auto slippage.
     pub max_auto_slippage_bps: Option<u16>,
+    /// Enables or disables the computation of auto slippage.
     pub compute_auto_slippage: bool,
-    /// The max amount of USD value that you are willing to accept for auto slippage.
+    /// The max USD value collision threshold for auto slippage.
     pub auto_slippage_collision_usd_value: Option<u32>,
-    /// Quote with a greater amount to find the route to minimize slippage
+    /// If true, the router tries to minimize slippage.
     pub minimize_slippage: Option<bool>,
-    /// Platform fee in basis points
+    /// Platform fee in basis points.
     pub platform_fee_bps: Option<u8>,
+    /// DEXes explicitly included in the search.
     pub dexes: Option<Dexes>,
+    /// DEXes explicitly excluded from the search.
     pub excluded_dexes: Option<Dexes>,
-    /// Quote only direct routes
+    /// If true, only direct token routes are considered.
     pub only_direct_routes: Option<bool>,
-    /// Quote fit into legacy transaction
+    /// If true, attempts to fit the quote into a legacy transaction.
     pub as_legacy_transaction: Option<bool>,
-    /// Restrict intermediate tokens to a top token set that has stable liquidity.
-    /// This will help to ease potential high slippage error rate when swapping with minimal impact on pricing.
+    /// Restricts intermediate tokens to a safe, liquid set.
     pub restrict_intermediate_tokens: Option<bool>,
-    /// Find a route given a maximum number of accounts involved,
-    /// this might dangerously limit routing ending up giving a bad price.
-    /// The max is an estimation and not the exact count
+    /// Maximum estimated number of accounts involved in the route.
     pub max_accounts: Option<usize>,
-    // Quote type to be used for routing, switches the algorithm
+    /// Identifier for the routing algorithm.
     pub quote_type: Option<String>,
-    // enable only full liquid markets as intermediate tokens
+    /// If true, enables only liquid markets as intermediate tokens.
     pub prefer_liquid_dexes: Option<bool>,
 }
 
 impl From<QuoteRequest> for InternalQuoteRequest {
+    /// Converts a client's QuoteRequest into the simplified InternalQuoteRequest used for core routing.
     fn from(request: QuoteRequest) -> Self {
         InternalQuoteRequest {
+            // Fields are explicitly mapped, dropping request.quote_args and other specific fields.
             input_mint: request.input_mint,
             output_mint: request.output_mint,
             amount: request.amount,
@@ -189,42 +242,61 @@ impl From<QuoteRequest> for InternalQuoteRequest {
     }
 }
 
-/// Comma delimited list of dex labels
-type Dexes = String;
+// --- Response Sub-Structure ---
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
+/// Details about the platform fee collected for the swap.
 pub struct PlatformFee {
+    /// The fee amount collected (factoring in token decimals).
     #[serde(with = "field_as_string")]
     pub amount: u64,
+    /// The fee percentage collected, in basis points (BPS).
     pub fee_bps: u8,
 }
 
+// --- Main Response Structure ---
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
+/// The final response containing the best quote and the path to execute the swap.
 pub struct QuoteResponse {
+    /// The mint of the token provided by the user.
     #[serde(with = "field_as_string")]
     pub input_mint: Pubkey,
+    /// The final input amount needed for the route (may differ slightly if SwapMode::ExactOut).
     #[serde(with = "field_as_string")]
     pub in_amount: u64,
+    /// The mint of the token to be received by the user.
     #[serde(with = "field_as_string")]
     pub output_mint: Pubkey,
+    /// The final output amount expected from the route (may differ slightly if SwapMode::ExactIn).
     #[serde(with = "field_as_string")]
     pub out_amount: u64,
-    /// Not used by build transaction
+    /// The threshold amount on the non-fixed side of the swap. Used for validation/slippage.
+    /// (e.g., minimum out for ExactIn, maximum in for ExactOut).
     #[serde(with = "field_as_string")]
     pub other_amount_threshold: u64,
+    /// The mode used for calculating the quote (ExactIn or ExactOut).
     pub swap_mode: SwapMode,
+    /// The slippage basis points used for the quote calculation.
     pub slippage_bps: u16,
+    /// The dynamically computed slippage used, if auto-slippage was enabled.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub computed_auto_slippage: Option<u16>,
+    /// Indicates if the quote minimized slippage by changing the input amount.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub uses_quote_minimizing_slippage: Option<bool>,
+    /// Details on the platform fee collected, if any.
     pub platform_fee: Option<PlatformFee>,
+    /// The percentage impact the swap will have on the liquidity pool price.
     pub price_impact_pct: Decimal,
+    /// The detailed list of steps (swaps) that make up the final route.
     pub route_plan: RoutePlanWithMetadata,
+    /// The slot number of the Solana network at the time the quote was generated. (Default 0)
     #[serde(default)]
     pub context_slot: u64,
+    /// The time taken (in seconds) to generate this quote. (Default 0.0)
     #[serde(default)]
     pub time_taken: f64,
 }
