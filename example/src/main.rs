@@ -25,7 +25,11 @@ async fn main() -> Result<()> {
     let api_base_url = env::var("API_BASE_URL").unwrap_or_else(|_| "https://quote-api.jup.ag/v6".into());
     println!("Using Jupiter base url: {}", api_base_url);
 
-    let jupiter_swap_api_client = JupiterSwapApiClient::new(api_base_url);
+    // Read API key from environment variable (required)
+    let api_key = env::var("JUPITER_API_KEY")
+        .expect("JUPITER_API_KEY environment variable must be set");
+
+    let jupiter_swap_api_client = JupiterSwapApiClient::new(api_base_url, api_key);
 
     // --- 1. GET /quote ---
     
