@@ -278,7 +278,7 @@ pub struct QuoteResponse {
     #[serde(with = "field_as_string")]
     pub other_amount_threshold: u64,
     /// The fee amount expected from the route
-    pub fee_amount: u64,
+    pub fee_amount: Option<u64>,
     /// The mode used for calculating the quote (ExactIn or ExactOut).
     pub swap_mode: SwapMode,
     /// The slippage basis points used for the quote calculation.
