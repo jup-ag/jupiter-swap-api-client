@@ -251,6 +251,8 @@ pub struct PlatformFee {
     /// The fee amount collected (factoring in token decimals).
     #[serde(with = "field_as_string")]
     pub amount: u64,
+    #[serde(with = "field_as_string")]
+    pub fee_amount: u64,
     /// The fee percentage collected, in basis points (BPS).
     pub fee_bps: u8,
 }
