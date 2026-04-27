@@ -89,5 +89,5 @@ You can also check out some of the [paid hosted APIs](https://station.jup.ag/doc
 
 ## Additional Resources
 
-- [Jupiter Swap API Documentation](https://station.jup.ag/docs/v6/swap-api): Learn more about the Jupiter Swap API and its capabilities.
+- [Jupiter Swap API Documentation](https://developers.jup.ag/docs/swap): Learn more about the Jupiter Swap API and its capabilities.
 - [jup.ag Website](https://jup.ag/): Explore the official website for additional information and resources.
