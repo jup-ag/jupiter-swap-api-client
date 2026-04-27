@@ -24,8 +24,13 @@ pub enum ClientError {
         status: reqwest::StatusCode,
         body: String,
     },
-    #[error("Failed to deserialize response: {0}")]
-    DeserializationError(#[from] reqwest::Error),
+    #[error("Failed to read response body: {0}")]
+    BodyReadError(#[from] reqwest::Error),
+    #[error("Failed to deserialize response at path `{path}`: {source}")]
+    DeserializationError {
+        path: String,
+        source: serde_json::Error,
+    },
 }
 
 async fn check_is_success(response: Response) -> Result<Response, ClientError> {
@@ -41,10 +46,12 @@ async fn check_status_code_and_deserialize<T: DeserializeOwned>(
     response: Response,
 ) -> Result<T, ClientError> {
     let response = check_is_success(response).await?;
-    response
-        .json::<T>()
-        .await
-        .map_err(ClientError::DeserializationError)
+    let text = response.text().await?;
+    let jd = &mut serde_json::Deserializer::from_str(&text);
+    serde_path_to_error::deserialize(jd).map_err(|e| ClientError::DeserializationError {
+        path: e.path().to_string(),
+        source: e.into_inner(),
+    })
 }
 
 impl JupiterSwapApiClient {
