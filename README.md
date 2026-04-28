@@ -32,7 +32,7 @@ const TEST_WALLET: Pubkey = pubkey!("2AQdpHJ2JpcEgPiATUXjQxA8QmafFegfQwSLWSprPic
 
 #[tokio::main]
 async fn main() {
-    let jupiter_swap_api_client = JupiterSwapApiClient::new("https://quote-api.jup.ag/v6");
+    let jupiter_swap_api_client = JupiterSwapApiClient::new("https://api.jup.ag/swap/v1");
 
     let quote_request = QuoteRequest {
         amount: 1_000_000,
