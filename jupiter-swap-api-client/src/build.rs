@@ -1,7 +1,7 @@
 //! Build data structures for requesting a swap price and handling the response.
 //! This is typically used by a DeFi routing or aggregation service on Solana.
 
-use std::fmt;
+use std::{collections::HashMap, fmt};
 
 use crate::{serde_helpers::{field_as_string, option_field_as_string}};
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de};
@@ -246,7 +246,7 @@ pub struct BuildInstructionsResponse {
     pub cleanup_instruction: Option<Instruction>,
     pub other_instructions: Vec<Instruction>,
     pub tip_instruction: Option<Instruction>,
-    pub addresses_by_lookup_table_address: Option<Vec<Pubkey>>
+    pub addresses_by_lookup_table_address: Option<HashMap<Pubkey, Vec<Pubkey>>>
 }
 
 impl From<BuildInstructionsResponseInternal> for BuildInstructionsResponse {
@@ -271,7 +271,11 @@ impl From<BuildInstructionsResponseInternal> for BuildInstructionsResponse {
               .collect(),
           addresses_by_lookup_table_address: value
               .addresses_by_lookup_table_address
-              .map(|v| v.into_iter().map(|p| p.0).collect()),
+              .map(|map| {
+                  map.into_iter()
+                      .map(|(k, v)| (k.0, v.into_iter().map(|p| p.0).collect()))
+                      .collect()
+              }),
         tip_instruction: value.tip_instruction.map(|i| i.into()),
         input_mint: value.input_mint,
         output_mint: value.output_mint,
@@ -314,10 +318,10 @@ pub struct BuildInstructionsResponseInternal {
     pub cleanup_instruction: Option<InstructionInternal>,
     pub other_instructions: Vec<InstructionInternal>,
     pub tip_instruction: Option<InstructionInternal>,
-    pub addresses_by_lookup_table_address: Option<Vec<PubkeyInternal>>
+    pub addresses_by_lookup_table_address: Option<HashMap<PubkeyInternal, Vec<PubkeyInternal>>>
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
 #[serde(rename_all = "camelCase")]
 pub struct PubkeyInternal(#[serde(with = "field_as_string")] Pubkey);
 
