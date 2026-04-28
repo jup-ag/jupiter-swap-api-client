@@ -210,10 +210,10 @@ pub struct BuildInstructionsResponse {
     pub setup_instructions: Vec<Instruction>,
     pub swap_instruction: Instruction,
     /// Post-swap cleanup instruction
-    pub cleanup_instruction: Instruction,
+    pub cleanup_instruction: Option<Instruction>,
     pub other_instructions: Vec<Instruction>,
-    pub tip_instruction: Instruction,
-    pub addresses_by_lookup_table_address: Vec<Pubkey>
+    pub tip_instruction: Option<Instruction>,
+    pub addresses_by_lookup_table_address: Option<Vec<Pubkey>>
 }
 
 impl From<BuildInstructionsResponseInternal> for BuildInstructionsResponse {
@@ -230,7 +230,7 @@ impl From<BuildInstructionsResponseInternal> for BuildInstructionsResponse {
               .map(Into::into)
               .collect(),
           swap_instruction: value.swap_instruction.into(),
-          cleanup_instruction: value.cleanup_instruction.into(),
+          cleanup_instruction: value.cleanup_instruction.map(|i| i.into()),
           other_instructions: value
               .other_instructions
               .into_iter()
@@ -238,10 +238,8 @@ impl From<BuildInstructionsResponseInternal> for BuildInstructionsResponse {
               .collect(),
           addresses_by_lookup_table_address: value
               .addresses_by_lookup_table_address
-              .into_iter()
-              .map(|p| p.0)
-              .collect(),
-        tip_instruction: value.tip_instruction.into(),
+              .map(|v| v.into_iter().map(|p| p.0).collect()),
+        tip_instruction: value.tip_instruction.map(|i| i.into()),
         input_mint: value.input_mint,
         output_mint: value.output_mint,
         in_amount: value.in_amount,
@@ -280,10 +278,10 @@ pub struct BuildInstructionsResponseInternal {
     pub setup_instructions: Vec<InstructionInternal>,
     pub swap_instruction: InstructionInternal,
     /// Post-swap cleanup instruction
-    pub cleanup_instruction: InstructionInternal,
+    pub cleanup_instruction: Option<InstructionInternal>,
     pub other_instructions: Vec<InstructionInternal>,
-    pub tip_instruction: InstructionInternal,
-    pub addresses_by_lookup_table_address: Vec<PubkeyInternal>
+    pub tip_instruction: Option<InstructionInternal>,
+    pub addresses_by_lookup_table_address: Option<Vec<PubkeyInternal>>
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
