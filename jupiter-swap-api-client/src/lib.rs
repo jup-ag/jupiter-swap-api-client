@@ -59,6 +59,44 @@ impl JupiterSwapApiClient {
         Self { base_path }
     }
 
+    /// Fetches a quote and builds raw swap instructions in a single call using the `/build` endpoint.
+    ///
+    /// This is the V2 equivalent of calling `quote` + `swap_instructions` separately (V1/Metis required
+    /// two calls: `GET /swap/v1/quote` then `POST /swap/v1/swap-instructions`).
+    ///
+    /// Routing is handled by **Metis**, Jupiter's onchain routing engine, which finds the optimal
+    /// swap path across Solana DEXes. Unlike the assembled-transaction endpoint, this returns raw
+    /// instructions, giving you full control to:
+    /// - Add custom instructions before/after the swap
+    /// - Integrate via CPI
+    /// - Modify any part of the transaction
+    ///
+    /// Once built and signed, submit the transaction via your own RPC or use `/submit` to land it
+    /// through Jupiter's transaction infrastructure with SOL tips.
+    ///
+    /// # V2 Changes
+    /// - **Base URL**: `https://api.jup.ag/swap/v2` (previously `https://api.jup.ag/swap/v1`)
+    /// - **Single call**: `GET /swap/v2/build` (previously two calls: quote + swap-instructions)
+    /// - **`routePlan`**: fees expressed in **bps** (previously `percent` in V1)
+    /// - **Instruction format**: V2 format (incompatible with V1)
+    ///
+    /// # Requires
+    /// A V2 base URL, e.g. `https://api.jup.ag/swap/v2`
+    pub async fn build(&self, quote_request: &QuoteRequest) -> Result<SwapInstructionsResponse, ClientError> {
+      let url = format!("{}/build", self.base_path);
+      let extra_args = quote_request.quote_args.clone();
+      let internal_quote_request = InternalQuoteRequest::from(quote_request.clone());
+      let response = Client::new()
+          .get(url)
+          .query(&internal_quote_request)
+          .query(&extra_args)
+          .send()
+          .await?;
+      check_status_code_and_deserialize::<SwapInstructionsResponseInternal>(response)
+          .await
+          .map(Into::into)
+    }
+
     pub async fn quote(&self, quote_request: &QuoteRequest) -> Result<QuoteResponse, ClientError> {
         let url = format!("{}/quote", self.base_path);
         let extra_args = quote_request.quote_args.clone();
