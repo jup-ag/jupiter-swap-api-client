@@ -85,6 +85,8 @@ impl JupiterSwapApiClient {
     ///
     /// # Requires
     /// A V2 base URL, e.g. `https://api.jup.ag/swap/v2`
+    /// 
+    /// [API](https://developers.jup.ag/docs/api-reference/swap/build)
     pub async fn build(&self, build_request: &BuildRequest) -> Result<BuildInstructionsResponse, ClientError> {
       let url = format!("{}/build", self.base_path);
       let internal_quote_request = InternalBuildRequest::from(build_request.clone());
