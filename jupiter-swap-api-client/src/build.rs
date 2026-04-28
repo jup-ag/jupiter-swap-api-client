@@ -20,7 +20,7 @@ pub struct RoutePlanStep {
     pub swap_info: SwapInfo,
     pub percent: f64,
     pub bps: u16,
-    pub usd_value: f64
+    pub usd_value: Option<f64>
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
