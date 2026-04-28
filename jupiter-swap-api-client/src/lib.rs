@@ -6,6 +6,9 @@ use serde::de::DeserializeOwned;
 use swap::{SwapInstructionsResponse, SwapInstructionsResponseInternal, SwapRequest, SwapResponse};
 use thiserror::Error;
 
+use crate::build::{BuildRequest, InternalBuildRequest};
+
+pub mod build;
 pub mod quote;
 pub mod route_plan_with_metadata;
 pub mod serde_helpers;
@@ -82,14 +85,12 @@ impl JupiterSwapApiClient {
     ///
     /// # Requires
     /// A V2 base URL, e.g. `https://api.jup.ag/swap/v2`
-    pub async fn build(&self, quote_request: &QuoteRequest) -> Result<SwapInstructionsResponse, ClientError> {
+    pub async fn build(&self, build_request: &BuildRequest) -> Result<SwapInstructionsResponse, ClientError> {
       let url = format!("{}/build", self.base_path);
-      let extra_args = quote_request.quote_args.clone();
-      let internal_quote_request = InternalQuoteRequest::from(quote_request.clone());
+      let internal_quote_request = InternalBuildRequest::from(build_request.clone());
       let response = Client::new()
           .get(url)
           .query(&internal_quote_request)
-          .query(&extra_args)
           .send()
           .await?;
       check_status_code_and_deserialize::<SwapInstructionsResponseInternal>(response)
