@@ -3,7 +3,7 @@
 
 use std::fmt;
 
-use crate::{route_plan_with_metadata::RoutePlanWithMetadata, serde_helpers::{field_as_string, option_field_as_string}};
+use crate::{serde_helpers::{field_as_string, option_field_as_string}};
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de};
 use solana_sdk::{instruction::{AccountMeta, Instruction}, pubkey::Pubkey};
 
@@ -11,6 +11,39 @@ use solana_sdk::{instruction::{AccountMeta, Instruction}, pubkey::Pubkey};
 type Dexes = String;
 
 // --- Main Request Structures ---
+
+pub type RoutePlanWithMetadata = Vec<RoutePlanStep>;
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct RoutePlanStep {
+    pub swap_info: SwapInfo,
+    pub percent: f64,
+    pub bps: u16,
+    pub usd_value: f64
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct SwapInfo {
+    #[serde(with = "field_as_string")]
+    pub amm_key: Pubkey,
+    pub label: String,
+    #[serde(with = "field_as_string")]
+    pub input_mint: Pubkey,
+    #[serde(with = "field_as_string")]
+    pub output_mint: Pubkey,
+    /// An estimation of the input amount into the AMM
+    #[serde(with = "field_as_string")]
+    pub in_amount: u64,
+    /// An estimation of the output amount into the AMM
+    #[serde(with = "field_as_string")]
+    pub out_amount: u64,
+    #[serde(default, with = "option_field_as_string")]
+    pub fee_amount: Option<u64>,
+    #[serde(default, with = "option_field_as_string")]
+    pub fee_mint: Option<Pubkey>,
+}
 
 #[derive(Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
