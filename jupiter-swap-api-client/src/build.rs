@@ -3,9 +3,9 @@
 
 use std::fmt;
 
-use crate::serde_helpers::{option_field_as_string, field_as_string};
+use crate::{route_plan_with_metadata::RoutePlanWithMetadata, serde_helpers::{field_as_string, option_field_as_string}};
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de};
-use solana_sdk::pubkey::Pubkey;
+use solana_sdk::{instruction::{AccountMeta, Instruction}, pubkey::Pubkey};
 
 /// Comma-delimited list of Decentralized Exchange (DEX) labels (e.g., "Raydium,Orca").
 type Dexes = String;
@@ -166,6 +166,165 @@ impl From<BuildRequest> for InternalBuildRequest {
             destination_token_account: request.destination_token_account,
             native_destination_account: request.native_destination_account,
             blockhash_slots_to_expiry: request.blockhash_slots_to_expiry,
+        }
+    }
+}
+
+pub mod base64_serialize_deserialize {
+  use base64::{engine::general_purpose::STANDARD, Engine};
+  use serde::{de, Deserializer, Serializer};
+
+  use super::*;
+  pub fn serialize<S: Serializer>(v: &Vec<u8>, s: S) -> Result<S::Ok, S::Error> {
+      let base58 = STANDARD.encode(v);
+      String::serialize(&base58, s)
+  }
+
+  pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
+  where
+      D: Deserializer<'de>,
+  {
+      let field_string = String::deserialize(deserializer)?;
+      STANDARD
+          .decode(field_string)
+          .map_err(|e| de::Error::custom(format!("base64 decoding error: {:?}", e)))
+  }
+}
+
+#[derive(Debug, Clone)]
+pub struct BuildInstructionsResponse {
+    /// The mint of the token being swapped (given).
+    pub input_mint: Pubkey,
+    /// The mint of the token to be received (wanted).
+    pub output_mint: Pubkey,
+    pub in_amount: u64,
+    pub out_amount: u64,
+    /// Minimum output amount after slippage
+    pub other_amount_threshold: u64,
+    pub swap_mode: String,
+    pub slippage_bps: u16,
+    pub route_plan: RoutePlanWithMetadata,
+    /// Compute unit price instruction (does not include compute unit limit)
+    pub compute_budget_instructions: Vec<Instruction>,
+    /// Pre-swap setup instructions (e.g. create ATAs)
+    pub setup_instructions: Vec<Instruction>,
+    pub swap_instruction: Instruction,
+    /// Post-swap cleanup instruction
+    pub cleanup_instruction: Instruction,
+    pub other_instructions: Vec<Instruction>,
+    pub tip_instruction: Instruction,
+    pub addresses_by_lookup_table_address: Vec<Pubkey>
+}
+
+impl From<BuildInstructionsResponseInternal> for BuildInstructionsResponse {
+  fn from(value: BuildInstructionsResponseInternal) -> Self {
+      Self {
+          compute_budget_instructions: value
+              .compute_budget_instructions
+              .into_iter()
+              .map(Into::into)
+              .collect(),
+          setup_instructions: value
+              .setup_instructions
+              .into_iter()
+              .map(Into::into)
+              .collect(),
+          swap_instruction: value.swap_instruction.into(),
+          cleanup_instruction: value.cleanup_instruction.into(),
+          other_instructions: value
+              .other_instructions
+              .into_iter()
+              .map(Into::into)
+              .collect(),
+          addresses_by_lookup_table_address: value
+              .addresses_by_lookup_table_address
+              .into_iter()
+              .map(|p| p.0)
+              .collect(),
+        tip_instruction: value.tip_instruction.into(),
+        input_mint: value.input_mint,
+        output_mint: value.output_mint,
+        in_amount: value.in_amount,
+        out_amount: value.out_amount,
+        other_amount_threshold: value.other_amount_threshold,
+        swap_mode: value.swap_mode,
+        slippage_bps: value.slippage_bps,
+        route_plan: value.route_plan,
+      }
+  }
+}
+
+// Duplicate for deserialization
+#[derive(Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct BuildInstructionsResponseInternal {
+    /// The mint of the token being swapped (given).
+    #[serde(with = "field_as_string")]
+    pub input_mint: Pubkey,
+    /// The mint of the token to be received (wanted).
+    #[serde(with = "field_as_string")]
+    pub output_mint: Pubkey,
+    #[serde(with = "field_as_string")]
+    pub in_amount: u64,
+    #[serde(with = "field_as_string")]
+    pub out_amount: u64,
+    /// Minimum output amount after slippage
+    #[serde(with = "field_as_string")]
+    pub other_amount_threshold: u64,
+    pub swap_mode: String,
+    pub slippage_bps: u16,
+    pub route_plan: RoutePlanWithMetadata,
+    /// Compute unit price instruction (does not include compute unit limit)
+    pub compute_budget_instructions: Vec<InstructionInternal>,
+    /// Pre-swap setup instructions (e.g. create ATAs)
+    pub setup_instructions: Vec<InstructionInternal>,
+    pub swap_instruction: InstructionInternal,
+    /// Post-swap cleanup instruction
+    pub cleanup_instruction: InstructionInternal,
+    pub other_instructions: Vec<InstructionInternal>,
+    pub tip_instruction: InstructionInternal,
+    pub addresses_by_lookup_table_address: Vec<PubkeyInternal>
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct PubkeyInternal(#[serde(with = "field_as_string")] Pubkey);
+
+#[derive(Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct InstructionInternal {
+    #[serde(with = "field_as_string")]
+    pub program_id: Pubkey,
+    pub accounts: Vec<AccountMetaInternal>,
+    #[serde(with = "base64_serialize_deserialize")]
+    pub data: Vec<u8>,
+}
+
+impl From<InstructionInternal> for Instruction {
+  fn from(val: InstructionInternal) -> Self {
+      Instruction {
+          program_id: val.program_id,
+          accounts: val.accounts.into_iter().map(Into::into).collect(),
+          data: val.data,
+      }
+  }
+}
+
+#[derive(Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountMetaInternal {
+    #[serde(with = "field_as_string")]
+    pub pubkey: Pubkey,
+    pub is_signer: bool,
+    pub is_writable: bool,
+}
+
+impl From<AccountMetaInternal> for AccountMeta {
+    fn from(val: AccountMetaInternal) -> Self {
+        AccountMeta {
+            pubkey: val.pubkey,
+            is_signer: val.is_signer,
+            is_writable: val.is_writable,
         }
     }
 }
