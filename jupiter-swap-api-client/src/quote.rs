@@ -60,7 +60,10 @@ impl FromStr for SwapMode {
         match s {
             "ExactIn" => Ok(Self::ExactIn),
             "ExactOut" => Ok(Self::ExactOut),
-            _ => Err(anyhow!("'{}' is not a valid SwapMode. Expected 'ExactIn' or 'ExactOut'.", s)),
+            _ => Err(anyhow!(
+                "'{}' is not a valid SwapMode. Expected 'ExactIn' or 'ExactOut'.",
+                s
+            )),
         }
     }
 }
@@ -141,7 +144,7 @@ impl Default for QuoteRequest {
             amount: 0,
             swap_mode: None,
             // Recommended default slippage for safe operation (0.5% or 50 BPS).
-            slippage_bps: 50, 
+            slippage_bps: 50,
             auto_slippage: None,
             max_auto_slippage_bps: None,
             compute_auto_slippage: false,
@@ -164,7 +167,6 @@ impl Default for QuoteRequest {
         }
     }
 }
-
 
 #[derive(Serialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]

@@ -13,7 +13,7 @@ use solana_sdk::{pubkey::Pubkey, signature::NullSigner};
 // --- CONSTANTS: MINT ADDRESSES AND WALLET ---
 
 const USDC_MINT: Pubkey = pubkey!("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
-const NATIVE_MINT: Pubkey = pubkey!("So11111111111111111111111111111111111111112");
+const TEST_MINT: Pubkey = pubkey!("2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo");
 
 // Test wallet address used for simulating the swap transaction.
 pub const TEST_WALLET: Pubkey = pubkey!("2AQdpHJ2JpcEgPiATUXjQxA8QmafFegfQwSLWSprPicm");
@@ -22,20 +22,23 @@ pub const TEST_WALLET: Pubkey = pubkey!("2AQdpHJ2JpcEgPiATUXjQxA8QmafFegfQwSLWSp
 // Use anyhow::Result for ergonomic error handling throughout the asynchronous main function.
 async fn main() -> Result<()> {
     // Determine the Jupiter API base URL, falling back to the standard endpoint.
-    let api_base_url = env::var("API_BASE_URL").unwrap_or_else(|_| "https://quote-api.jup.ag/v6".into());
+    let api_base_url =
+        env::var("API_BASE_URL").unwrap_or_else(|_| "https://api.jup.ag/swap/v1".into());
+    //let api_key = env::var("API_KEY").expect("API_KEY must be specified to use Jupiter API".into());
+    let api_key = "08f594a8-5a23-44e1-b8eb-94d26b0c2198".to_string();
     println!("Using Jupiter base url: {}", api_base_url);
 
-    let jupiter_swap_api_client = JupiterSwapApiClient::new(api_base_url);
+    let jupiter_swap_api_client = JupiterSwapApiClient::new(api_base_url, api_key)?;
 
     // --- 1. GET /quote ---
-    
+
     // Request a quote for swapping 1,000,000 USDC (6 decimals) into SOL (native mint).
     let quote_request = QuoteRequest {
         amount: 1_000_000,
-        input_mint: USDC_MINT,
-        output_mint: NATIVE_MINT,
+        input_mint: TEST_MINT,
+        output_mint: USDC_MINT,
         // Restrict the route search to specific DEXes for potential latency reduction.
-        dexes: Some("Whirlpool,Meteora DLMM,Raydium CLMM".into()),
+        //dexes: Some("Whirlpool,Meteora DLMM,Raydium CLMM".into()),
         slippage_bps: 50, // 0.5% slippage tolerance
         ..QuoteRequest::default()
     };
@@ -53,24 +56,28 @@ async fn main() -> Result<()> {
     };
 
     let swap_response = jupiter_swap_api_client.swap(&swap_request, None).await?;
-    println!("Raw serialized transaction length: {}", swap_response.swap_transaction.len());
+    println!(
+        "Raw serialized transaction length: {}",
+        swap_response.swap_transaction.len()
+    );
 
     // Deserialize the raw transaction bytes into a Solana VersionedTransaction struct.
     let versioned_transaction: VersionedTransaction =
         bincode::deserialize(&swap_response.swap_transaction)?;
 
     // --- 3. SIMULATE TRANSACTION SENDING ---
-    
+
     // NOTE: This part demonstrates the signing and sending flow but will FAIL
     // on the network because the transaction is signed with a NullSigner.
-    
+
     // Create a NullSigner using the test wallet key (does not hold the actual private key).
     let null_signer = NullSigner::new(&TEST_WALLET);
     let signed_versioned_transaction =
         VersionedTransaction::try_new(versioned_transaction.message, &[&null_signer])?;
 
     // Determine the RPC client URL, prioritizing environment variable for flexibility.
-    let rpc_url = env::var("SOLANA_RPC_URL").unwrap_or_else(|_| "https://api.mainnet-beta.solana.com".into());
+    let rpc_url =
+        env::var("SOLANA_RPC_URL").unwrap_or_else(|_| "https://api.mainnet-beta.solana.com".into());
     let rpc_client = RpcClient::new(rpc_url);
 
     // Attempt to send the transaction (expected to fail due to bad signature).
@@ -79,17 +86,19 @@ async fn main() -> Result<()> {
         .await
     {
         Ok(_) => println!("Unexpected success! (Check why the NullSigner worked)"),
-        Err(error) => println!("Transaction failed as expected (Signature verification failed): {error}"),
+        Err(error) => {
+            println!("Transaction failed as expected (Signature verification failed): {error}")
+        }
     }
 
     // --- 4. POST /swap-instructions ---
-    
+
     // Alternatively, request only the instruction details (not the serialized transaction).
     let swap_instructions = jupiter_swap_api_client
         .swap_instructions(&swap_request)
         .await?;
-        
+
     println!("\nSwap Instructions Details: {swap_instructions:?}");
-    
+
     Ok(())
 }

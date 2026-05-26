@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use solana_sdk::pubkey::Pubkey;
 
-use crate::serde_helpers::field_as_string;
+use crate::serde_helpers::{field_as_string, option_field_as_string};
 
 /// Topologically sorted DAG with additional metadata for rendering
 pub type RoutePlanWithMetadata = Vec<RoutePlanStep>;
@@ -11,6 +11,8 @@ pub type RoutePlanWithMetadata = Vec<RoutePlanStep>;
 pub struct RoutePlanStep {
     pub swap_info: SwapInfo,
     pub percent: u8,
+    #[serde(default, with = "option_field_as_string")]
+    pub bps: Option<u16>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
@@ -29,8 +31,8 @@ pub struct SwapInfo {
     /// An estimation of the output amount into the AMM
     #[serde(with = "field_as_string")]
     pub out_amount: u64,
-    #[serde(with = "field_as_string")]
-    pub fee_amount: u64,
-    #[serde(with = "field_as_string")]
-    pub fee_mint: Pubkey,
+    #[serde(default, with = "option_field_as_string")]
+    pub fee_amount: Option<u64>,
+    #[serde(default, with = "option_field_as_string")]
+    pub fee_mint: Option<Pubkey>,
 }
