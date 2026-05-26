@@ -42,6 +42,8 @@ async fn check_status_code_and_deserialize<T: DeserializeOwned>(
     response: Response,
 ) -> Result<T, ClientError> {
     let response = check_is_success(response).await?;
+    //println!("Response: {:?}", response.text().await.unwrap());
+    //Err(ClientError::RequestFailed { status: StatusCode::PARTIAL_CONTENT, body: "sdsdasd".to_string() })
     response
         .json::<T>()
         .await
