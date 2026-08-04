@@ -13,6 +13,6 @@ serde_json = "1"
 serde_qs = "0.13"
 reqwest = { version = "0.12", features = ["json"] }
 base64 = "0.22"
-rust_decimal = "1.36"
-solana-sdk = { workspace = true } 
+rust_decimal = { version = "1.36", features = ["serde"], default-features = false }
+solana-sdk = { workspace = true }
 solana-account-decoder = { workspace = true }
